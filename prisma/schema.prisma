@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  name      String
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model HouseHold {
+  id              String   @id @default(uuid())
+  householdNumber String   @unique
+  monthlyIncome   Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  profiles Profile[]
+}
+
+model FacilityBasedDelivery {
+  id                String   @id @default(uuid())
+  label             String // e.g. "Live Birth"
+  facilityMale      Boolean  @default(false)
+  facilityFemale    Boolean  @default(false)
+  nonFacilityMale   Boolean  @default(false)
+  nonFacilityFemale Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+}
+
+model BabyData {
+  id        String   @id @default(uuid())
+  weight    Float
+  height    Float
+  muac      Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+}
+
+model Profile {
+  id String @id @default(uuid())
+
+  areYou4ps Boolean @default(false)
+  areYouIps Boolean @default(false)
+  areYouPwd Boolean @default(false)
+
+  firstName               String
+  middleName              String?
+  lastName                String
+  relationship            String
+  birthDate               DateTime
+  age                     Int
+  sex                     String
+  odkMember               Boolean   @default(false)
+  occupation              String?
+  educationalAttainment   String?
+  religion                String?
+  ethnicGroup             String?
+  philhealthNumber        String?
+  emergencyContactName    String?
+  emergencyContactNumber  String?
+  areYouPregnant          Boolean   @default(false)
+  lastMenstrualPeriod     DateTime?
+  expectedDeliveryDate    DateTime?
+  doYouBreastfeed         Boolean   @default(false)
+  immunizedChildren       Boolean   @default(false)
+  marriedCouple           String?
+  sanitizedToilet         Boolean   @default(false)
+  constructedDateToilet   DateTime?
+  presumptiveTubercolosis Boolean   @default(false)
+  broughtToFacility       Boolean   @default(false)
+  dwellingType            String?
+  waterSource             String?
+  vegetables              String[]
+  animals                 String[]
+  bingeDrinker            Boolean   @default(false)
+  smoker                  Boolean   @default(false)
+  garbageDisposal         String?
+  hypertension            String?
+  diabetes                String?
+  bothSickness            String?
+  oscaNumber              Int?
+  pwdInformation          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  householdId String
+  household   HouseHold @relation(fields: [householdId], references: [id])
+
+  babyData              BabyData[]
+  facilityBasedDelivery FacilityBasedDelivery[]
+}
