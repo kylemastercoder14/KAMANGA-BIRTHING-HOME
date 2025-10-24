@@ -6,11 +6,12 @@ import {
   IconClipboardDataFilled,
   IconDashboardFilled,
   IconDeviceHeartMonitorFilled,
-  IconFilesFilled,
   IconFileTextFilled,
   IconStack3Filled,
   IconUserFilled,
   IconSettingsFilled,
+  IconClipboardTextFilled,
+  IconLibraryPhoto,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/globals/nav-main";
@@ -66,14 +67,19 @@ const data = {
       icon: IconDeviceHeartMonitorFilled,
     },
     {
+      title: "File Manager",
+      url: "/file-manager",
+      icon: IconLibraryPhoto,
+    },
+    {
       title: "Manage Employees",
       url: "/manage-employees",
       icon: IconUserFilled,
     },
     {
-      title: "Task Management",
-      url: "/task-management",
-      icon: IconFilesFilled,
+      title: "Activity Notes",
+      url: "/activity-notes",
+      icon: IconClipboardTextFilled,
     },
     {
       title: "Backup Database",
@@ -81,8 +87,8 @@ const data = {
       icon: IconStack3Filled,
     },
     {
-      title: "Audit Logs",
-      url: "/audit-logs",
+      title: "System Logs",
+      url: "/system-logs",
       icon: IconFileTextFilled,
     },
     {

@@ -8,8 +8,7 @@ const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
-      forcedTheme="light"
+      defaultTheme="system"
       enableSystem
       disableTransitionOnChange
     >

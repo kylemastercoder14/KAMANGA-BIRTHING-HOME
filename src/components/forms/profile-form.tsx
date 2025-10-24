@@ -96,7 +96,7 @@ const ProfileForm = ({
     doYouBreastfeed: initialData?.doYouBreastfeed ?? false,
     immunizedChildren: initialData?.immunizedChildren ?? false,
     marriedCouple: initialData?.marriedCouple || "",
-    sanitizedToilet: initialData?.sanitizedToilet ?? false,
+    sanitizedToilet: initialData?.sanitizedToilet || "",
     constructedDateToilet: initialData?.constructedDateToilet
       ? new Date(initialData.constructedDateToilet)
       : new Date(),
@@ -208,7 +208,7 @@ const ProfileForm = ({
         ];
         break;
       case 3:
-        // fieldsToValidate = ["images"];
+        fieldsToValidate = ["sanitizedToilet"];
         break;
       case 4:
         break;
@@ -299,7 +299,7 @@ const ProfileForm = ({
                   ? "bg-green-600 text-white"
                   : currentStep === step.id
                   ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                  : "bg-gray-200 text-gray-600 dark:text-gray-300"
               )}
             >
               {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}

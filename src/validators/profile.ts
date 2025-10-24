@@ -44,7 +44,7 @@ export const ProfileValidators = z.object({
   doYouBreastfeed: z.boolean(),
   immunizedChildren: z.boolean(),
   marriedCouple: z.string().optional(),
-  sanitizedToilet: z.boolean(),
+  sanitizedToilet: z.string().min(1, "Sanitized toilet is required"),
   constructedDateToilet: z.date(),
   presumptiveTubercolosis: z.boolean(),
   broughtToFacility: z.boolean(),

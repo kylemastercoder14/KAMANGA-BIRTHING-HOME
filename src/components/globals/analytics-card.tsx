@@ -1,4 +1,4 @@
-import { IconTrendingDown, IconTrendingUp, IconBabyCarriage, IconHeartbeat, IconStethoscope, IconWoman, IconUser, IconUsersGroup } from "@tabler/icons-react"
+import { IconTrendingDown, IconTrendingUp, IconBabyCarriage, IconHeartbeat, IconStethoscope, IconWoman, IconUser, IconUsersGroup, IconCategory2, IconDisabled2, IconHome2 } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -12,7 +12,7 @@ import {
 
 export function AnalyticsCard() {
   return (
-    <div className="grid lg:grid-cols-4 grid-cols-1 gap-5">
+    <div className="grid lg:grid-cols-5 grid-cols-1 gap-5">
       {/* Total Populations */}
       <Card className="@container/card">
         <CardHeader>
@@ -45,12 +45,12 @@ export function AnalyticsCard() {
         </CardHeader>
       </Card>
 
-      {/* Active Prenatal Patients */}
+      {/* Active IPS Members */}
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Prenatal Patients</CardDescription>
+          <CardDescription>Active IPS Members</CardDescription>
           <CardTitle className="text-2xl font-semibold flex items-center gap-2 @[250px]/card:text-3xl">
-            <IconStethoscope className="text-purple-500" /> 212
+            <IconCategory2 className="text-purple-500" /> 212
           </CardTitle>
           <CardAction>
             <Badge variant="outline" className="text-green-600 bg-green-300/20">
@@ -61,12 +61,28 @@ export function AnalyticsCard() {
         </CardHeader>
       </Card>
 
-      {/* Birth Rate Growth */}
+      {/* Active 4PS Members */}
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Birth Rate Growth</CardDescription>
+          <CardDescription>Active 4PS Members</CardDescription>
           <CardTitle className="text-2xl font-semibold flex items-center gap-2 @[250px]/card:text-3xl">
-            <IconHeartbeat className="text-red-500" /> 4.5%
+            <IconHome2 className="text-blue-500" /> 251
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline" className="text-green- bg-green-300/20">
+              <IconTrendingUp className="size-4" />
+              +4.5%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      {/* Active PWD Members */}
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Active PWD Members</CardDescription>
+          <CardTitle className="text-2xl font-semibold flex items-center gap-2 @[250px]/card:text-3xl">
+            <IconDisabled2 className="text-amber-500" /> 24
           </CardTitle>
           <CardAction>
             <Badge variant="outline" className="text-green- bg-green-300/20">

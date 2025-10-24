@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { getGreeting } from "@/lib/utils";
 import { NavUser } from './nav-user';
+import { ModeToggle } from './mode-toggle';
 
 export function SiteHeader() {
   const [greeting, setGreeting] = useState(getGreeting());
@@ -19,7 +20,7 @@ export function SiteHeader() {
 
   // TODO: Replace with actual user data fetching logic
   const user = {
-    username: "Admin",
+    username: "Kyle Andre Lim",
   }
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-14">
@@ -31,6 +32,7 @@ export function SiteHeader() {
         />
         <h1 className="text-base font-medium">{greeting}, {`${user?.username}` || "Admin"}!</h1>
         <div className="ml-auto flex items-center gap-2">
+          <ModeToggle />
           <NavUser user={{
             name: "Kyle Andre Lim",
             email: "kylemastercoder14@gmail.com",

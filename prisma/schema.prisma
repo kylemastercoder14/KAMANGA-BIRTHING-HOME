@@ -13,8 +13,12 @@ model User {
   name      String
   password  String
   role      Role     @default(STAFF)
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  notes      Notes[]
+  systemLogs SystemLogs[]
 }
 
 enum Role {
@@ -86,7 +90,7 @@ model Profile {
   doYouBreastfeed         Boolean   @default(false)
   immunizedChildren       Boolean   @default(false)
   marriedCouple           String?
-  sanitizedToilet         Boolean   @default(false)
+  sanitizedToilet         String
   constructedDateToilet   DateTime?
   presumptiveTubercolosis Boolean   @default(false)
   broughtToFacility       Boolean   @default(false)
@@ -111,4 +115,45 @@ model Profile {
 
   babyData              BabyData[]
   facilityBasedDelivery FacilityBasedDelivery[]
+}
+
+model Notes {
+  id       String       @id @default(uuid())
+  template TemplateType
+  content  String
+  tags     String[]
+  color    String
+  order    Int
+  isPinned Boolean      @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+enum TemplateType {
+  BLANK_NOTE
+  TODO_LIST
+  REMINDER
+  MEETING_NOTES
+  BRAINSTORM
+}
+
+model BackupHistory {
+  id        String   @id @default(cuid())
+  action    String
+  filename  String
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model SystemLogs {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }

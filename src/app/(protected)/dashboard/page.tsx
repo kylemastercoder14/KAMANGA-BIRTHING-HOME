@@ -1,9 +1,10 @@
 import React from "react";
 import { AnalyticsCard } from "@/components/globals/analytics-card";
-import { AgeDemographics } from "@/components/globals/age-demographics";
-import { CategoryDemographics } from "@/components/globals/category-demographics";
-import { DiseaseDemographics } from '@/components/globals/disease-demographics';
+import { PopulationPerSitio } from "@/components/globals/total-population-count";
+import { SitioPopulationPercentage } from "@/components/globals/total-population-pie";
+import { DiseaseDemographics } from "@/components/globals/disease-demographics";
 import UpcomingEvents from "@/components/globals/upcoming-events";
+import GalleryDocumentation from "@/components/globals/gallery-documentation";
 
 const Page = () => {
   return (
@@ -11,10 +12,10 @@ const Page = () => {
       <AnalyticsCard />
       <div className="mt-5 grid lg:grid-cols-5 grid-cols-1 gap-5">
         <div className="lg:col-span-3">
-          <AgeDemographics />
+          <PopulationPerSitio />
         </div>
         <div className="lg:col-span-2">
-          <CategoryDemographics />
+          <SitioPopulationPercentage />
         </div>
       </div>
       <div className="mt-5 grid lg:grid-cols-5 grid-cols-1 gap-5">
@@ -22,8 +23,11 @@ const Page = () => {
           <UpcomingEvents />
         </div>
         <div className="lg:col-span-3">
-			<DiseaseDemographics />
-		</div>
+          <DiseaseDemographics />
+        </div>
+      </div>
+      <div className="mt-5">
+        <GalleryDocumentation />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -37,18 +38,23 @@ const months = [
 
 const chartData = months.map((month) => ({
   month,
-  desktop: Math.floor(Math.random() * 400) + 50, // random 50–450
-  mobile: Math.floor(Math.random() * 300) + 20, // random 20–320
+  hypertension: Math.floor(Math.random() * 400) + 50, // random 50–450
+  diabetes: Math.floor(Math.random() * 300) + 20, // random 20–320
+  tubercolosis: Math.floor(Math.random() * 600) + 50, // random 50-600
 }));
 
 const chartConfig = {
-  desktop: {
+  hypertension: {
     label: "Hypertension",
-    color: "var(--chart-1)",
+    color: "hsl(210, 100%, 70%)",
   },
-  mobile: {
+  diabetes: {
     label: "Diabetes",
-    color: "var(--chart-2)",
+    color: "hsl(40, 100%, 60%)",
+  },
+  tubercolosis: {
+    label: "Tubercolosis",
+    color: "hsl(0, 100%, 70%)",
   },
 } satisfies ChartConfig;
 
@@ -60,6 +66,19 @@ export function DiseaseDemographics() {
         <CardDescription>
           Showing disease demographics over the past year
         </CardDescription>
+        <CardAction>
+          <div className="flex items-center gap-5">
+            {Object.entries(chartConfig).map(([key, { label, color }]) => (
+              <div key={key} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded-md"
+                  style={{ backgroundColor: color }}
+                ></div>
+                <span className="text-sm text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+        </CardAction>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -79,8 +98,17 @@ export function DiseaseDemographics() {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-            <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+            <Bar
+              dataKey="hypertension"
+              fill="var(--color-hypertension)"
+              radius={4}
+            />
+            <Bar dataKey="diabetes" fill="var(--color-diabetes)" radius={4} />
+            <Bar
+              dataKey="tubercolosis"
+              fill="var(--color-tubercolosis)"
+              radius={4}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>

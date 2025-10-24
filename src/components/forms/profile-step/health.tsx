@@ -27,6 +27,13 @@ import {
   TagsValue,
 } from "@/components/kibo-ui/tags";
 import { Input } from "@/components/ui/input";
+import {
+  Choicebox,
+  ChoiceboxIndicator,
+  ChoiceboxItem,
+  ChoiceboxItemHeader,
+  ChoiceboxItemTitle,
+} from "@/components/kibo-ui/choicebox";
 import { CheckIcon, PlusIcon } from "lucide-react";
 
 const defaultVegetables = [
@@ -61,6 +68,21 @@ const defaultAnimals = [
   { id: "chicks", label: "Chicks" },
   { id: "squirrel", label: "Squirrel" },
   { id: "rabbit", label: "Rabbit" },
+];
+
+const sanitizedToilet = [
+  {
+    id: "solo",
+    label: "Solo",
+  },
+  {
+    id: "shared",
+    label: "Shared",
+  },
+  {
+    id: "none",
+    label: "None",
+  },
 ];
 
 const HealthDetails = ({ form }: { form: UseFormReturn<ProfileFormData> }) => {
@@ -126,26 +148,40 @@ const HealthDetails = ({ form }: { form: UseFormReturn<ProfileFormData> }) => {
             name="sanitizedToilet"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>
+                  Sanitized Toilet <span className="text-red-600">*</span>
+                </FormLabel>
                 <FormControl>
-                  <div className="flex border border-input p-3 rounded-md items-center justify-between">
-                    <div>
-                      <div className="font-medium">Sanitized Toilet</div>
-                      <div className="text-sm text-gray-500">
-                        Do you have a sanitized toilet?
-                      </div>
-                    </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <Choicebox
+                    defaultValue={field.value}
+                    onValueChange={field.onChange}
+                    style={{
+                      gridTemplateColumns: `repeat(${sanitizedToilet.length}, 1fr)`,
+                    }}
+                  >
+                    {sanitizedToilet.map((option) => (
+                      <ChoiceboxItem
+                        className="border-input"
+                        key={option.id}
+                        value={option.id}
+                      >
+                        <ChoiceboxItemHeader>
+                          <ChoiceboxItemTitle>
+                            {option.label}
+                          </ChoiceboxItemTitle>
+                        </ChoiceboxItemHeader>
+                        <ChoiceboxIndicator />
+                      </ChoiceboxItem>
+                    ))}
+                  </Choicebox>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {form.watch("sanitizedToilet") && (
+          {(form.watch("sanitizedToilet") === "shared" ||
+            form.watch("sanitizedToilet") === "solo") && (
             <FormField
               control={form.control}
               name="constructedDateToilet"
