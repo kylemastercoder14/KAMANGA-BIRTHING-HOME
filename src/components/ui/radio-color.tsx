@@ -41,7 +41,7 @@ const RadioColor: React.FC<RadioColorProps> = ({
             "ring-[1px] ring-border size-10 rounded-full cursor-pointer",
             "data-[state=checked]:ring-2 data-[state=checked]:ring-blue-500",
             itemClassName,
-            `bg-${option.value}-300`
+            `bg-${option.value}-200`
           )}
         ></RadioGroupPrimitive.Item>
       ))}
