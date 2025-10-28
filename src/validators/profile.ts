@@ -9,15 +9,18 @@ export const FacilityBasedDeliveryValidator = z.object({
 });
 
 export const BabyDataValidator = z.object({
-  height: z.number().min(0, "Height must be positive"),
-  weight: z.number().min(0, "Weight must be positive"),
-  muac: z.number().min(0, "MUAC must be positive"),
+  height: z.coerce.number().min(0, "Height must be positive"),
+  weight: z.coerce.number().min(0, "Weight must be positive"),
+  muac: z.coerce.number().min(0, "MUAC must be positive"),
   label: z.string().optional(),
 });
 
 export const ProfileValidators = z.object({
   householdNumber: z.string().min(1, "Household number is required"),
-  monthlyIncome: z.number().min(1, "Monthly income must be greater than 0"),
+  monthlyIncome: z.coerce
+    .number()
+    .min(1, "Monthly income must be greater than 0"),
+  location: z.string().min(1, "Location is required"),
   areYou4ps: z.boolean(),
   areYouIps: z.boolean(),
   areYouPwd: z.boolean(),
@@ -25,8 +28,8 @@ export const ProfileValidators = z.object({
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required"),
   relationship: z.string().min(1, "Relationship is required"),
-  birthDate: z.date(),
-  age: z.number().min(0, "Age must be a positive number"),
+  birthDate: z.coerce.date(),
+  age: z.coerce.number().min(0, "Age must be a positive number"),
   sex: z.string().min(1, "Sex is required"),
   odkMember: z.boolean(),
   occupation: z.string().min(1, "Occupation is required"),
@@ -39,13 +42,13 @@ export const ProfileValidators = z.object({
   emergencyContactName: z.string().optional(),
   emergencyContactNumber: z.string().optional(),
   areYouPregnant: z.boolean(),
-  lastMenstrualPeriod: z.date().optional(),
-  expectedDeliveryDate: z.date().optional(),
+  lastMenstrualPeriod: z.coerce.date().optional().nullable(),
+  expectedDeliveryDate: z.coerce.date().optional().nullable(),
   doYouBreastfeed: z.boolean(),
   immunizedChildren: z.boolean(),
   marriedCouple: z.string().optional(),
   sanitizedToilet: z.string().min(1, "Sanitized toilet is required"),
-  constructedDateToilet: z.date(),
+  constructedDateToilet: z.coerce.date(),
   presumptiveTubercolosis: z.boolean(),
   broughtToFacility: z.boolean(),
   dwellingType: z.string().optional(),
@@ -58,13 +61,14 @@ export const ProfileValidators = z.object({
   hypertension: z.string().optional(),
   diabetes: z.string().optional(),
   bothSickness: z.string().optional(),
-  oscaNumber: z.number().optional(),
+  oscaNumber: z.coerce.number().optional().nullable(),
   pwdInformation: z.string().optional(),
   facilityBasedDeliveries: z
     .array(FacilityBasedDeliveryValidator)
     .optional()
+    .nullable()
     .default([]),
-  babyData: z.array(BabyDataValidator).optional().default([]),
+  babyData: z.array(BabyDataValidator).optional().nullable().default([]),
 });
 
 export type ProfileFormData = z.infer<typeof ProfileValidators>;

@@ -9,7 +9,6 @@ import {
   IconFileTextFilled,
   IconStack3Filled,
   IconUserFilled,
-  IconSettingsFilled,
   IconClipboardTextFilled,
   IconLibraryPhoto,
 } from "@tabler/icons-react";
@@ -26,11 +25,6 @@ import {
 import Image from "next/image";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -44,15 +38,15 @@ const data = {
       items: [
         {
           title: "Create new profile",
-          url: "/barangay-profiling/create-profile",
+          url: "/barangay-profiling/profile/new",
         },
         {
           title: "Manage profiles",
           url: "/barangay-profiling",
         },
         {
-          title: "Inactive profiles",
-          url: "/barangay-profiling/inactive-profiles",
+          title: "Households",
+          url: "/barangay-profiling/households",
         },
       ],
     },
@@ -90,11 +84,6 @@ const data = {
       title: "System Logs",
       url: "/system-logs",
       icon: IconFileTextFilled,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: IconSettingsFilled,
     },
   ],
 };

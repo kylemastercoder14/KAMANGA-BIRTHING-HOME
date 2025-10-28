@@ -1,5 +1,6 @@
 import { isSameDay } from "date-fns";
-import { CalendarEvent, EventColor } from "@/types";
+import { EventColor } from "@/types";
+import { Events } from "@prisma/client";
 
 /**
  * Get CSS classes for event colors
@@ -46,7 +47,9 @@ export function getBorderRadiusClasses(
 /**
  * Check if an event is a multi-day event
  */
-export function isMultiDayEvent(event: CalendarEvent): boolean {
+export function isMultiDayEvent(event: Events): boolean {
+  if (!event.start || !event.end) return false;
+
   const eventStart = new Date(event.start);
   const eventEnd = new Date(event.end);
   return event.allDay || eventStart.getDate() !== eventEnd.getDate();
@@ -55,22 +58,23 @@ export function isMultiDayEvent(event: CalendarEvent): boolean {
 /**
  * Filter events for a specific day
  */
-export function getEventsForDay(
-  events: CalendarEvent[],
-  day: Date
-): CalendarEvent[] {
+export function getEventsForDay(events: Events[], day: Date): Events[] {
   return events
     .filter((event) => {
+      if (!event.start) return false;
       const eventStart = new Date(event.start);
       return isSameDay(day, eventStart);
     })
-    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    .sort((a, b) => {
+      if (!a.start || !b.start) return 0;
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    });
 }
 
 /**
  * Sort events with multi-day events first, then by start time
  */
-export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
+export function sortEvents(events: Events[]): Events[] {
   return [...events].sort((a, b) => {
     const aIsMultiDay = isMultiDayEvent(a);
     const bIsMultiDay = isMultiDayEvent(b);
@@ -78,6 +82,7 @@ export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
     if (aIsMultiDay && !bIsMultiDay) return -1;
     if (!aIsMultiDay && bIsMultiDay) return 1;
 
+    if (!a.start || !b.start) return 0;
     return new Date(a.start).getTime() - new Date(b.start).getTime();
   });
 }
@@ -85,12 +90,9 @@ export function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
 /**
  * Get multi-day events that span across a specific day (but don't start on that day)
  */
-export function getSpanningEventsForDay(
-  events: CalendarEvent[],
-  day: Date
-): CalendarEvent[] {
+export function getSpanningEventsForDay(events: Events[], day: Date): Events[] {
   return events.filter((event) => {
-    if (!isMultiDayEvent(event)) return false;
+    if (!isMultiDayEvent(event) || !event.start || !event.end) return false;
 
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end);
@@ -106,11 +108,10 @@ export function getSpanningEventsForDay(
 /**
  * Get all events visible on a specific day (starting, ending, or spanning)
  */
-export function getAllEventsForDay(
-  events: CalendarEvent[],
-  day: Date
-): CalendarEvent[] {
+export function getAllEventsForDay(events: Events[], day: Date): Events[] {
   return events.filter((event) => {
+    if (!event.start || !event.end) return false;
+
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end);
     return (
@@ -124,12 +125,11 @@ export function getAllEventsForDay(
 /**
  * Get all events for a day (for agenda view)
  */
-export function getAgendaEventsForDay(
-  events: CalendarEvent[],
-  day: Date
-): CalendarEvent[] {
+export function getAgendaEventsForDay(events: Events[], day: Date): Events[] {
   return events
     .filter((event) => {
+      if (!event.start || !event.end) return false;
+
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
       return (
@@ -138,7 +138,10 @@ export function getAgendaEventsForDay(
         (day > eventStart && day < eventEnd)
       );
     })
-    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    .sort((a, b) => {
+      if (!a.start || !b.start) return 0;
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    });
 }
 
 /**

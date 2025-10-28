@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { RiCalendarLine, RiDeleteBinLine } from "@remixicon/react";
 import { format, isBefore } from "date-fns";
 
-import type { CalendarEvent, EventColor } from "./";
+import type { EventColor } from "./";
 import {
   DefaultEndHour,
   DefaultStartHour,
   EndHour,
-  StartHour
+  StartHour,
 } from "@/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,30 +21,43 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
+import { saveEvent } from "@/actions";
+import { toast } from "sonner";
+import { Events } from "@prisma/client";
 
 interface EventDialogProps {
-  event: CalendarEvent | null;
+  event: Events | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (event: CalendarEvent) => void;
   onDelete: (eventId: string) => void;
 }
 
-export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventDialogProps) {
+export function EventDialog({
+  event,
+  isOpen,
+  onClose,
+  onDelete,
+}: EventDialogProps) {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date>(new Date());
@@ -57,6 +70,7 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
   const [error, setError] = useState<string | null>(null);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Debug log to check what event is being passed
   useEffect(() => {
@@ -68,8 +82,9 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
       setTitle(event.title || "");
       setDescription(event.description || "");
 
-      const start = new Date(event.start);
-      const end = new Date(event.end);
+      // Use nullish fallback so new Date never receives null
+      const start = new Date(event.start ?? Date.now());
+      const end = new Date(event.end ?? Date.now());
 
       setStartDate(start);
       setEndDate(end);
@@ -120,12 +135,14 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
     return options;
   }, []); // Empty dependency array ensures this only runs once
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     if (!allDay) {
-      const [startHours = 0, startMinutes = 0] = startTime.split(":").map(Number);
+      const [startHours = 0, startMinutes = 0] = startTime
+        .split(":")
+        .map(Number);
       const [endHours = 0, endMinutes = 0] = endTime.split(":").map(Number);
 
       if (
@@ -134,7 +151,9 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
         endHours < StartHour ||
         endHours > EndHour
       ) {
-        setError(`Selected time must be between ${StartHour}:00 and ${EndHour}:00`);
+        setError(
+          `Selected time must be between ${StartHour}:00 and ${EndHour}:00`
+        );
         return;
       }
 
@@ -154,16 +173,42 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
     // Use generic title if empty
     const eventTitle = title.trim() ? title : "(no title)";
 
-    onSave({
-      id: event?.id || "",
-      title: eventTitle,
-      description,
-      start,
-      end,
-      allDay,
-      location,
-      color
-    });
+    // Set loading state
+    setLoading(true);
+    setError("");
+
+    try {
+      // Call server action
+      const result = await saveEvent({
+        title: eventTitle,
+        description,
+        start,
+        end,
+        allDay,
+        location,
+        color,
+      });
+
+      if (result.success && result.data) {
+        toast.success(result.message);
+
+        // Call the original onSave callback if needed
+        // onSave(result.data);
+
+        // Close modal or reset form
+        onClose?.();
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to save event");
+        toast.error(result.error || "Failed to save event");
+      }
+    } catch (error) {
+      console.error("Error saving event:", error);
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = () => {
@@ -183,38 +228,38 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
       value: "sky",
       label: "Sky",
       bgClass: "bg-sky-400 data-[state=checked]:bg-sky-400",
-      borderClass: "border-sky-400 data-[state=checked]:border-sky-400"
+      borderClass: "border-sky-400 data-[state=checked]:border-sky-400",
     },
     {
       value: "amber",
       label: "Amber",
       bgClass: "bg-amber-400 data-[state=checked]:bg-amber-400",
-      borderClass: "border-amber-400 data-[state=checked]:border-amber-400"
+      borderClass: "border-amber-400 data-[state=checked]:border-amber-400",
     },
     {
       value: "violet",
       label: "Violet",
       bgClass: "bg-violet-400 data-[state=checked]:bg-violet-400",
-      borderClass: "border-violet-400 data-[state=checked]:border-violet-400"
+      borderClass: "border-violet-400 data-[state=checked]:border-violet-400",
     },
     {
       value: "rose",
       label: "Rose",
       bgClass: "bg-rose-400 data-[state=checked]:bg-rose-400",
-      borderClass: "border-rose-400 data-[state=checked]:border-rose-400"
+      borderClass: "border-rose-400 data-[state=checked]:border-rose-400",
     },
     {
       value: "emerald",
       label: "Emerald",
       bgClass: "bg-emerald-400 data-[state=checked]:bg-emerald-400",
-      borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400"
+      borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400",
     },
     {
       value: "orange",
       label: "Orange",
       bgClass: "bg-orange-400 data-[state=checked]:bg-orange-400",
-      borderClass: "border-orange-400 data-[state=checked]:border-orange-400"
-    }
+      borderClass: "border-orange-400 data-[state=checked]:border-orange-400",
+    },
   ];
 
   return (
@@ -223,7 +268,9 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
         <DialogHeader>
           <DialogTitle>{event?.id ? "Edit Event" : "Create Event"}</DialogTitle>
           <DialogDescription className="sr-only">
-            {event?.id ? "Edit the details of this event" : "Add a new event to your calendar"}
+            {event?.id
+              ? "Edit the details of this event"
+              : "Add a new event to your calendar"}
           </DialogDescription>
         </DialogHeader>
         {error && (
@@ -234,7 +281,12 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
         <div className="grid gap-4 py-4">
           <div className="*:not-first:mt-1.5">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" placeholder='Enter event title (e.g. Medical Mission)' value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              id="title"
+              placeholder="Enter event title (e.g. Medical Mission)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </div>
 
           <div className="*:not-first:mt-1.5">
@@ -244,7 +296,7 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder='Provide any additional information here...'
+              placeholder="Provide any additional information here..."
             />
           </div>
 
@@ -259,8 +311,14 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
                     className={cn(
                       "group bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]",
                       !startDate && "text-muted-foreground"
-                    )}>
-                    <span className={cn("truncate", !startDate && "text-muted-foreground")}>
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "truncate",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
                       {startDate ? format(startDate, "PPP") : "Pick a date"}
                     </span>
                     <RiCalendarLine
@@ -321,8 +379,14 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
                     className={cn(
                       "group bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]",
                       !endDate && "text-muted-foreground"
-                    )}>
-                    <span className={cn("truncate", !endDate && "text-muted-foreground")}>
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "truncate",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
                       {endDate ? format(endDate, "PPP") : "Pick a date"}
                     </span>
                     <RiCalendarLine
@@ -380,22 +444,34 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
 
           <div className="*:not-first:mt-1.5">
             <Label htmlFor="location">Location</Label>
-            <Input id="location" placeholder='Enter event location (e.g. Sitio Purok 1)' value={location} onChange={(e) => setLocation(e.target.value)} />
+            <Input
+              id="location"
+              placeholder="Enter event location (e.g. Sitio Purok 1)"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </div>
           <fieldset className="space-y-4">
-            <legend className="text-foreground text-sm leading-none font-medium">Etiquette</legend>
+            <legend className="text-foreground text-sm leading-none font-medium">
+              Etiquette
+            </legend>
             <RadioGroup
               className="flex gap-1.5"
               defaultValue={colorOptions[0]?.value}
               value={color}
-              onValueChange={(value: EventColor) => setColor(value)}>
+              onValueChange={(value: EventColor) => setColor(value)}
+            >
               {colorOptions.map((colorOption) => (
                 <RadioGroupItem
                   key={colorOption.value}
                   id={`color-${colorOption.value}`}
                   value={colorOption.value}
                   aria-label={colorOption.label}
-                  className={cn("size-6 shadow-none", colorOption.bgClass, colorOption.borderClass)}
+                  className={cn(
+                    "size-6 shadow-none",
+                    colorOption.bgClass,
+                    colorOption.borderClass
+                  )}
                 />
               ))}
             </RadioGroup>
@@ -403,7 +479,12 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
         </div>
         <DialogFooter className="flex-row sm:justify-between">
           {event?.id && (
-            <Button variant="outline" size="icon" onClick={handleDelete} aria-label="Delete event">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleDelete}
+              aria-label="Delete event"
+            >
               <RiDeleteBinLine size={16} aria-hidden="true" />
             </Button>
           )}
@@ -411,7 +492,7 @@ export function EventDialog({ event, isOpen, onClose, onSave, onDelete }: EventD
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button disabled={loading} onClick={handleSave}>{loading ? "Saving..." : "Save"}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

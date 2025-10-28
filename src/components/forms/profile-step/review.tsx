@@ -57,6 +57,7 @@ const ReviewSubmit = ({
             label="Monthly Income"
             value={values.monthlyIncome ? `₱${values.monthlyIncome.toLocaleString()}` : "N/A"}
           />
+          <Field label="Location" value={values.location} />
           <Field label="4Ps Member" value={values.areYou4ps ? "Yes" : "No"} />
           <Field label="IPs Member" value={values.areYouIps ? "Yes" : "No"} />
           <Field label="PWD" value={values.areYouPwd ? "Yes" : "No"} />

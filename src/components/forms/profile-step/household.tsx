@@ -68,21 +68,29 @@ const HouseholdInformation = ({
   }, []);
 
   useEffect(() => {
-  if (!householdNumber) return;
+    if (!householdNumber) return;
 
-  const existing = houseHold.find(
-    (h) => h.householdNumber === householdNumber
-  );
+    const existing = houseHold.find(
+      (h) => h.householdNumber === householdNumber
+    );
 
-  const currentIncome = form.getValues("monthlyIncome");
+    const currentIncome = form.getValues("monthlyIncome");
 
-  // ✅ Only set monthlyIncome if it hasn’t been filled (e.g., freshly selected household)
-  if ((currentIncome === null || currentIncome === undefined || currentIncome === 0) && existing) {
-    form.setValue("monthlyIncome", existing.monthlyIncome ?? 0);
-  } else if (!existing && (currentIncome === null || currentIncome === undefined)) {
-    form.setValue("monthlyIncome", null as any);
-  }
-}, [householdNumber, houseHold, form]);
+    // ✅ Only set monthlyIncome if it hasn’t been filled (e.g., freshly selected household)
+    if (
+      (currentIncome === null ||
+        currentIncome === undefined ||
+        currentIncome === 0) &&
+      existing
+    ) {
+      form.setValue("monthlyIncome", existing.monthlyIncome ?? 0);
+    } else if (
+      !existing &&
+      (currentIncome === null || currentIncome === undefined)
+    ) {
+      form.setValue("monthlyIncome", null as any);
+    }
+  }, [householdNumber, houseHold, form]);
 
   const handleCreateNew = async (newValue: string) => {
     setCreatingHouseHold(true);
@@ -98,6 +106,7 @@ const HouseholdInformation = ({
         form.setValue("householdNumber", newValue);
         // ✅ When new created, ensure monthlyIncome is null
         form.setValue("monthlyIncome", null as any);
+        form.setValue("location", null as any);
       }
     } catch (error) {
       console.error("Error creating new household:", error);
@@ -111,6 +120,29 @@ const HouseholdInformation = ({
     value: house.householdNumber,
     label: house.householdNumber,
   }));
+
+  const locations = [
+    {
+      value: "Sitio 1",
+      label: "Sitio 1",
+    },
+    {
+      value: "Sitio 2",
+      label: "Sitio 2",
+    },
+    {
+      value: "Sitio 3",
+      label: "Sitio 3",
+    },
+    {
+      value: "Sitio 4",
+      label: "Sitio 4",
+    },
+    {
+      value: "Sitio 5",
+      label: "Sitio 5",
+    },
+  ];
   return (
     <div>
       <Form {...form}>
@@ -149,6 +181,47 @@ const HouseholdInformation = ({
                               value={household.value}
                             >
                               {household.label}
+                            </ComboboxItem>
+                          ))}
+                        </ComboboxGroup>
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Location <span className="text-red-600">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Combobox
+                    data={locations}
+                    onValueChange={field.onChange}
+                    type="Location"
+                    value={field.value}
+                  >
+                    <ComboboxTrigger
+                      disabled={isSubmitting}
+                      className="w-full"
+                    />
+                    <ComboboxContent>
+                      <ComboboxInput />
+                      <ComboboxEmpty />
+                      <ComboboxList>
+                        <ComboboxGroup>
+                          {locations.map((location) => (
+                            <ComboboxItem
+                              key={location.value}
+                              value={location.value}
+                            >
+                              {location.label}
                             </ComboboxItem>
                           ))}
                         </ComboboxGroup>

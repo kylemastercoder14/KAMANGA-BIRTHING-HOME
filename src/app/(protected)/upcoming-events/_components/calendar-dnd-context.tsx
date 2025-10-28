@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useId, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   DndContext,
   DragOverlay,
@@ -12,15 +19,16 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
-  type UniqueIdentifier
+  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { addMinutes, differenceInMinutes } from "date-fns";
 
-import { EventItem, type CalendarEvent } from "./";
+import { EventItem } from "./";
+import { Events } from "@prisma/client";
 
 // Define the context type
 type CalendarDndContextType = {
-  activeEvent: CalendarEvent | null;
+  activeEvent: Events | null;
   activeId: UniqueIdentifier | null;
   activeView: "month" | "week" | "day" | null;
   currentTime: Date | null;
@@ -46,7 +54,7 @@ const CalendarDndContext = createContext<CalendarDndContextType>({
   eventHeight: null,
   isMultiDay: false,
   multiDayWidth: null,
-  dragHandlePosition: null
+  dragHandlePosition: null,
 });
 
 // Hook to use the context
@@ -55,13 +63,18 @@ export const useCalendarDnd = () => useContext(CalendarDndContext);
 // Props for the provider
 interface CalendarDndProviderProps {
   children: ReactNode;
-  onEventUpdate: (event: CalendarEvent) => void;
+  onEventUpdate: (event: Events) => void;
 }
 
-export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProviderProps) {
-  const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
+export function CalendarDndProvider({
+  children,
+  onEventUpdate,
+}: CalendarDndProviderProps) {
+  const [activeEvent, setActiveEvent] = useState<Events | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [activeView, setActiveView] = useState<"month" | "week" | "day" | null>(null);
+  const [activeView, setActiveView] = useState<"month" | "week" | "day" | null>(
+    null
+  );
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [eventHeight, setEventHeight] = useState<number | null>(null);
   const [isMultiDay, setIsMultiDay] = useState(false);
@@ -83,21 +96,21 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
     useSensor(MouseSensor, {
       // Require the mouse to move by 5px before activating
       activationConstraint: {
-        distance: 5
-      }
+        distance: 5,
+      },
     }),
     useSensor(TouchSensor, {
       // Press delay of 250ms, with tolerance of 5px of movement
       activationConstraint: {
         delay: 250,
-        tolerance: 5
-      }
+        tolerance: 5,
+      },
     }),
     useSensor(PointerSensor, {
       // Require the pointer to move by 5px before activating
       activationConstraint: {
-        distance: 5
-      }
+        distance: 5,
+      },
     })
   );
 
@@ -119,9 +132,9 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
       height,
       isMultiDay: eventIsMultiDay,
       multiDayWidth: eventMultiDayWidth,
-      dragHandlePosition: eventDragHandlePosition
+      dragHandlePosition: eventDragHandlePosition,
     } = active.data.current as {
-      event: CalendarEvent;
+      event: Events;
       view: "month" | "week" | "day";
       height?: number;
       isMultiDay?: boolean;
@@ -139,7 +152,9 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
     setActiveEvent(calendarEvent);
     setActiveId(active.id);
     setActiveView(view);
-    setCurrentTime(new Date(calendarEvent.start));
+    setCurrentTime(
+      calendarEvent.start ? new Date(calendarEvent.start) : new Date()
+    );
     setIsMultiDay(eventIsMultiDay || false);
     setMultiDayWidth(eventMultiDayWidth || null);
     setDragHandlePosition(eventDragHandlePosition || null);
@@ -234,7 +249,7 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
       }
 
       const activeData = active.data.current as {
-        event?: CalendarEvent;
+        event?: Events;
         view?: string;
       };
       const overData = over.data.current as { date?: Date; time?: number };
@@ -275,8 +290,17 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
       }
 
       // Calculate new end time based on the original duration
+      if (!calendarEvent.start || !calendarEvent.end) {
+        console.warn(
+          "Missing start or end date for calendarEvent:",
+          calendarEvent
+        );
+        return; // or handle gracefully
+      }
+
       const originalStart = new Date(calendarEvent.start);
       const originalEnd = new Date(calendarEvent.end);
+
       const durationMinutes = differenceInMinutes(originalEnd, originalStart);
       const newEnd = addMinutes(newStart, durationMinutes);
 
@@ -293,7 +317,7 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
         onEventUpdate({
           ...calendarEvent,
           start: newStart,
-          end: newEnd
+          end: newEnd,
         });
       }
     } catch (error) {
@@ -317,7 +341,8 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}>
+      onDragEnd={handleDragEnd}
+    >
       <CalendarDndContext.Provider
         value={{
           activeEvent,
@@ -327,8 +352,9 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
           eventHeight,
           isMultiDay,
           multiDayWidth,
-          dragHandlePosition
-        }}>
+          dragHandlePosition,
+        }}
+      >
         {children}
 
         <DragOverlay adjustScale={false} dropAnimation={null}>
@@ -336,9 +362,11 @@ export function CalendarDndProvider({ children, onEventUpdate }: CalendarDndProv
             <div
               style={{
                 height: eventHeight ? `${eventHeight}px` : "auto",
-                width: isMultiDay && multiDayWidth ? `${multiDayWidth}%` : "100%"
+                width:
+                  isMultiDay && multiDayWidth ? `${multiDayWidth}%` : "100%",
                 // Remove the transform that was causing the shift
-              }}>
+              }}
+            >
               <EventItem
                 event={activeEvent}
                 view={activeView}

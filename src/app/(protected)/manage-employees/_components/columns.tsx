@@ -1,14 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { CheckIcon, ChevronsUpDown, CopyIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDown, CopyIcon, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
 import CellActions from "./cell-action";
 import Image from "next/image";
-import { User } from '@prisma/client';
-import { Badge } from '@/components/ui/badge';
+import { User } from "@prisma/client";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -112,20 +111,64 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: "biodata",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status
+          Biodata
           <ChevronsUpDown className="h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      return <Badge className="ml-3.5">Active</Badge>;
+      const biodataUrl = row.original.biodata;
+      const name = row.original.name;
+
+      const handlePrint = () => {
+        if (!biodataUrl) {
+          toast.error("No biodata file available.");
+          return;
+        }
+
+        const printWindow = window.open(biodataUrl, "_blank");
+        if (printWindow) {
+          const checkLoaded = setInterval(() => {
+            if (printWindow.document.readyState === "complete") {
+              clearInterval(checkLoaded);
+              printWindow.focus();
+              printWindow.print();
+            }
+          }, 500);
+        } else {
+          toast.error("Failed to open biodata file.");
+        }
+      };
+
+      // Extract filename from URL (e.g., "17613219954515-zq4a7s6ue3e-CRITERIA.pdf")
+      const fileName = biodataUrl
+        ? decodeURIComponent(biodataUrl.split("/").pop() || "")
+        : "No File";
+
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="link"
+            className="flex items-center"
+            onClick={handlePrint}
+          >
+            <Printer className="size-4" />
+            <span
+              className="text-sm truncate max-w-[300px]"
+              title={fileName}
+            >
+              {fileName || name}
+            </span>
+          </Button>
+        </div>
+      );
     },
   },
   {

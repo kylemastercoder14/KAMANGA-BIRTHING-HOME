@@ -1,6 +1,5 @@
 "use client";
 
-import { faker } from "@faker-js/faker";
 import {
   CalendarBody,
   CalendarDate,
@@ -19,59 +18,72 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Events } from "@prisma/client";
 
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+interface UpcomingEventsProps {
+  events: Events[];
+}
 
-const statuses = [
-  { id: faker.string.uuid(), name: "Planned", color: "#6B7280" },
-  { id: faker.string.uuid(), name: "In Progress", color: "#F59E0B" },
-  { id: faker.string.uuid(), name: "Done", color: "#10B981" },
-];
-
-const exampleFeatures = Array.from({ length: 20 })
-  .fill(null)
-  .map(() => ({
-    id: faker.string.uuid(),
-    name: capitalize(faker.company.buzzPhrase()),
-    startAt: faker.date.past({ years: 0.5, refDate: new Date() }),
-    endAt: faker.date.future({ years: 0.5, refDate: new Date() }),
-    status: faker.helpers.arrayElement(statuses),
+export function UpcomingEvents({ events }: UpcomingEventsProps) {
+  // ✅ Map Events from Prisma to calendar features
+  const features = events.map((event) => ({
+    id: event.id,
+    name: event.title,
+    startAt: event.start ? new Date(event.start) : new Date(),
+    endAt: event.end ? new Date(event.end) : new Date(),
+    status: {
+      id: "default",
+      name: event.allDay ? "All Day" : "Scheduled",
+      color:
+        event.color ||
+        (event.start && new Date(event.start) < new Date()
+          ? "#F97316" // orange for past events
+          : "#10B981"), // green for upcoming
+    },
   }));
 
-const earliestYear =
-  exampleFeatures
-    .map((feature) => feature.startAt.getFullYear())
-    .sort()
-    .at(0) ?? new Date().getFullYear();
+  // 📅 Determine year range for the picker
+  const earliestYear =
+    features.map((f) => f.startAt.getFullYear()).sort().at(0) ??
+    new Date().getFullYear();
+  const latestYear =
+    features.map((f) => f.endAt.getFullYear()).sort().at(-1) ??
+    new Date().getFullYear();
 
-const latestYear =
-  exampleFeatures
-    .map((feature) => feature.endAt.getFullYear())
-    .sort()
-    .at(-1) ?? new Date().getFullYear();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Upcoming Events</CardTitle>
+        <CardDescription>
+          Stay updated with the latest community activities and programs
+        </CardDescription>
+      </CardHeader>
 
-const UpcomingEvents = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Upcoming Events</CardTitle>
-      <CardDescription>Stay updated with the latest events</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <CalendarProvider>
-        <CalendarDate>
-          <CalendarDatePicker>
-            <CalendarMonthPicker />
-            <CalendarYearPicker end={latestYear} start={earliestYear} />
-          </CalendarDatePicker>
-          <CalendarDatePagination />
-        </CalendarDate>
-        <CalendarHeader />
-        <CalendarBody features={exampleFeatures}>
-          {({ feature }) => <CalendarItem feature={feature} key={feature.id} />}
-        </CalendarBody>
-      </CalendarProvider>
-    </CardContent>
-  </Card>
-);
+      <CardContent>
+        <CalendarProvider>
+          <CalendarDate>
+            <CalendarDatePicker>
+              <CalendarMonthPicker />
+              <CalendarYearPicker start={earliestYear} end={latestYear} />
+            </CalendarDatePicker>
+            <CalendarDatePagination />
+          </CalendarDate>
+
+          <CalendarHeader />
+
+          <CalendarBody features={features}>
+            {({ feature }) => (
+              <CalendarItem
+                key={feature.id}
+                feature={feature}
+                className="rounded-md border border-gray-200 bg-white shadow-sm hover:bg-gray-50 transition"
+              />
+            )}
+          </CalendarBody>
+        </CalendarProvider>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default UpcomingEvents;

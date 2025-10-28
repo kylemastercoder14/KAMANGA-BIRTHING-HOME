@@ -1,30 +1,38 @@
-import React from 'react'
-import { ProgramHeader } from './_components/program-header'
-import { VideoPlayer } from './_components/video-player'
-import { ProgramDetails } from './_components/program-details'
-import { InstructorProfile } from './_components/instructor-profile'
-import { ProgramCurriculum } from './_components/program-curriculum'
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import db from "@/lib/db";
+import Link from "next/link";
+import ProgramsGrid from './_components/programs-grid';
 
-const Page = () => {
+const Page = async () => {
+  const data = await db.healthProgram.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      sections: true,
+    },
+  });
+
   return (
-	 <div>
-      <ProgramHeader />
-      <main className="py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-8 lg:col-span-2">
-            <VideoPlayer />
-            <ProgramDetails />
-            <InstructorProfile />
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold tracking-tight">Health Programs</h1>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <ProgramCurriculum />
-          </div>
-        </div>
-      </main>
+        <Link href="/health-programs/create">
+          <Button>
+            <PlusCircle className="size-4 mr-2" />
+            Add Program
+          </Button>
+        </Link>
+      </div>
+
+      {/* Filter + Grid (Client-Side Controlled) */}
+      <ProgramsGrid data={data} />
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

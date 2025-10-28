@@ -66,6 +66,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             selected={internalDate}
             captionLayout="dropdown"
             onSelect={handleSelect}
+            startMonth={new Date(1900, 0)}
+            endMonth={new Date(2100, 11)}
           />
         </PopoverContent>
       </Popover>

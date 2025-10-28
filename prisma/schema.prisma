@@ -14,11 +14,13 @@ model User {
   password  String
   role      Role     @default(STAFF)
   image     String?
+  biodata   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   notes      Notes[]
   systemLogs SystemLogs[]
+  events     Events[]
 }
 
 enum Role {
@@ -28,6 +30,7 @@ enum Role {
 
 model HouseHold {
   id              String   @id @default(uuid())
+  location        String? // Sitio 1, Sitio 2
   householdNumber String   @unique
   monthlyIncome   Float?
   createdAt       DateTime @default(now())
@@ -156,4 +159,71 @@ model SystemLogs {
   details   String?
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Events {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  start       DateTime?
+  end         DateTime?
+  allDay      Boolean   @default(false)
+  color       String?
+  location    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}
+
+model HealthProgram {
+  id                    String   @id @default(uuid())
+  title                 String
+  description           String
+  instructor            String
+  instructorDescription String
+  tags                  String[]
+  thumbnailUrl          String
+  viewsCount            Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections ProgramSection[]
+}
+
+model ProgramSection {
+  id            String  @id @default(uuid())
+  title         String
+  description   String?
+  videoUrl      String
+  totalDuration Int
+  order         Int
+
+  healthProgramId String
+  healthProgram   HealthProgram @relation(fields: [healthProgramId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FileNode {
+  id          String     @id @default(cuid())
+  name        String
+  type        FileType
+  icon        String
+  date        DateTime
+  size        String
+  ownerName   String
+  ownerAvatar String
+  parentId    String?
+  parent      FileNode?  @relation("FileChildren", fields: [parentId], references: [id])
+  children    FileNode[] @relation("FileChildren")
+}
+
+enum FileType {
+  file
+  folder
 }

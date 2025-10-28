@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   Card,
@@ -11,49 +12,50 @@ import {
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
-export const description = "Total population percentage per sitio (2025)";
+// 🔹 Props for passing real sitio data
+interface SitioPopulationPercentageProps {
+  populationPerSitio: {
+    sitio: string;
+    population: number;
+  }[];
+}
 
-// 🧭 Raw sitio population counts
-const sitioData = [
-  { sitio: "Sitio 1", population: 550 },
-  { sitio: "Sitio 2", population: 890 },
-  { sitio: "Sitio 3", population: 720 },
-  { sitio: "Sitio 4", population: 610 },
-  { sitio: "Sitio 5", population: 950 },
-  { sitio: "Sitio 6", population: 430 },
-  { sitio: "Sitio 7", population: 380 },
-];
-
-// 🎨 Generate distinct colors using HSL (evenly spaced hues)
+// 🎨 Generate distinct HSL colors for each sitio
 function generateDistinctColors(count: number): string[] {
   const colors: string[] = [];
   for (let i = 0; i < count; i++) {
-    const hue = Math.round((360 / count) * i); // evenly spaced hues
-    const saturation = 70; // stay colorful
-    const lightness = 60; // stay readable
+    const hue = Math.round((360 / count) * i);
+    const saturation = 70;
+    const lightness = 60;
     colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
   }
   return colors;
 }
 
-const distinctColors = generateDistinctColors(sitioData.length);
+export function SitioPopulationPercentage({
+  populationPerSitio,
+}: SitioPopulationPercentageProps) {
+  // ✅ Compute total population and percentages
+  const totalPopulation = populationPerSitio.reduce(
+    (sum, sitio) => sum + sitio.population,
+    0
+  );
 
-// ✅ Calculate total and percentages
-const totalPopulation = sitioData.reduce((sum, s) => sum + s.population, 0);
-const chartData = sitioData.map((s, index) => ({
-  sitio: s.sitio,
-  population: s.population,
-  percentage: ((s.population / totalPopulation) * 100).toFixed(1),
-  fill: distinctColors[index],
-}));
+  const colors = generateDistinctColors(populationPerSitio.length);
 
-// 🧩 Build chart config dynamically
-const chartConfig = sitioData.reduce((acc, s, i) => {
-  acc[s.sitio] = { label: s.sitio, color: chartData[i].fill };
-  return acc;
-}, {} as ChartConfig);
+  const chartData = populationPerSitio.map((s, index) => ({
+    sitio: s.sitio,
+    population: s.population,
+    percentage: ((s.population / totalPopulation) * 100).toFixed(1),
+    fill: colors[index],
+  }));
 
-export function SitioPopulationPercentage() {
+  // 🧩 Dynamic chart config
+  const chartConfig = populationPerSitio.reduce((acc, s, i) => {
+    acc[s.sitio] = { label: s.sitio, color: chartData[i].fill };
+    return acc;
+  }, {} as ChartConfig);
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">

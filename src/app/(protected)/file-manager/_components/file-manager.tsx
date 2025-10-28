@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,11 +9,13 @@ import {
   Folder,
   File,
   Home,
-  UploadIcon,
   FolderPlus,
   FileTextIcon,
   MoreHorizontalIcon,
-  XIcon
+  XIcon,
+  Loader2,
+  FileSpreadsheetIcon,
+  ImageIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,29 +25,57 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 import { FileUploadDialog } from "./file-upload-dialog";
-import allFileItems from "./data.json";
+import { getFilesByParent, getFileById, deleteFileNode } from "@/actions";
 import FileManagerPagination from "./pagination";
+import FileManagerAnalytics from "./file-manager-analytics";
+import FileManagerHeader from "./file-manager-header";
+import { toast } from "sonner";
+import { CreateFolderDialog } from "./folder-dialog";
 
-type FileItem = (typeof allFileItems)[number];
+type FileItem = {
+  id: string;
+  name: string;
+  type: "file" | "folder";
+  icon: string;
+  date: Date;
+  size: string;
+  ownerName: string;
+  ownerAvatar: string;
+  parentId: string | null;
+  children?: FileItem[];
+};
 
 function getFileIcon(iconType: string) {
   switch (iconType) {
     case "folder":
       return <Folder className="h-5 w-5 text-yellow-600" />;
+    case "image":
+      return <ImageIcon className="h-5 w-5 text-gray-600" />;
+    case "xlsx":
+      return (
+        <div className="flex h-5 w-5 items-center justify-center rounded bg-green-700 text-xs font-bold text-white">
+          <FileSpreadsheetIcon className="size-3" />
+        </div>
+      );
     case "figma":
       return (
         <div className="flex h-5 w-5 items-center justify-center rounded bg-purple-500 text-xs font-bold text-white">
@@ -57,7 +88,7 @@ function getFileIcon(iconType: string) {
           S
         </div>
       );
-    case "word":
+    case "docx":
       return (
         <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-xs font-bold text-white">
           W
@@ -99,16 +130,64 @@ export function FileManager() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState(""); // file type filter
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [fileItems, setFileItems] = useState<FileItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [breadcrumbData, setBreadcrumbData] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [deleting, setDeleting] = useState(false);
 
-  const currentPath = searchParams.get("path") || "";
-  const pathSegments = currentPath ? currentPath.split("/").filter(Boolean) : [];
-
+  const currentFolderId = searchParams.get("folderId") || undefined;
   const isMobile = useIsMobile();
+
+  // Fetch files from database
+  const fetchFiles = async () => {
+    setLoading(true);
+    try {
+      const files = await getFilesByParent(currentFolderId);
+      setFileItems(files as FileItem[]);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      toast.error("Failed to load files");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Build breadcrumb navigation by traversing parent chain
+  const buildBreadcrumb = async (folderId?: string) => {
+    if (!folderId) {
+      setBreadcrumbData([]);
+      return;
+    }
+
+    const crumbs: Array<{ id: string; name: string }> = [];
+    let currentId: string | null = folderId;
+
+    try {
+      while (currentId) {
+        const folder = await getFileById(currentId);
+        if (!folder) break;
+        crumbs.unshift({ id: folder.id, name: folder.name });
+        currentId = folder.parentId;
+      }
+      setBreadcrumbData(crumbs);
+    } catch (error) {
+      console.error("Error building breadcrumb:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+    buildBreadcrumb(currentFolderId);
+  }, [currentFolderId]);
 
   const parseFileSize = (sizeStr: string): number => {
     const size = Number.parseFloat(sizeStr);
@@ -116,15 +195,6 @@ export function FileManager() {
     if (sizeStr.includes("MB")) return size * 1024 * 1024;
     if (sizeStr.includes("KB")) return size * 1024;
     return size;
-  };
-
-  const parseDate = (dateStr: string): number => {
-    const [day, month, year] = dateStr.split(".");
-    return new Date(
-      2000 + Number.parseInt(year),
-      Number.parseInt(month) - 1,
-      Number.parseInt(day)
-    ).getTime();
   };
 
   const sortItems = (items: FileItem[]): FileItem[] => {
@@ -136,7 +206,7 @@ export function FileManager() {
           comparison = a.name.localeCompare(b.name);
           break;
         case "date":
-          comparison = parseDate(a.date) - parseDate(b.date);
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
         case "size":
           comparison = parseFileSize(a.size) - parseFileSize(b.size);
@@ -147,27 +217,22 @@ export function FileManager() {
     });
   };
 
-  const getCurrentFolderItems = () => {
-    if (!currentPath) {
-      return allFileItems.filter((item) => !item.parentPath);
-    }
+  const filteredItems = fileItems.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesType =
+      filterType === "all" || filterType === "" || item.icon === filterType;
+    return matchesSearch && matchesType;
+  });
 
-    const parentFolder = allFileItems.find(
-      (item) => item.name === pathSegments[pathSegments.length - 1]
-    );
-    return parentFolder?.children || [];
-  };
-
-  const currentItems = getCurrentFolderItems();
-  const filteredItems = currentItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
   const sortedAndFilteredItems = sortItems(filteredItems);
 
   useEffect(() => {
     setSelectedItem(null);
     setShowMobileDetails(false);
-  }, [currentPath]);
+    setSelectedItems(new Set());
+  }, [currentFolderId]);
 
   const handleSortChange = (option: SortOption) => {
     if (sortBy === option) {
@@ -178,34 +243,20 @@ export function FileManager() {
     }
   };
 
-  const getSortLabel = () => {
-    const directionIcon = sortDirection === "asc" ? "↑" : "↓";
-    switch (sortBy) {
-      case "name":
-        return `Name ${directionIcon}`;
-      case "date":
-        return `Date ${directionIcon}`;
-      case "size":
-        return `Size ${directionIcon}`;
-    }
-  };
-
   const handleItemClick = (item: FileItem) => {
     if (item.type === "folder") {
-      const newPath = currentPath ? `${currentPath}/${item.name}` : item.name;
-      router.push(`?path=${encodeURIComponent(newPath)}`);
+      router.push(`?folderId=${item.id}`);
     } else {
       setSelectedItem(item);
       setShowMobileDetails(true);
     }
   };
 
-  const handleBreadcrumbClick = (index: number) => {
-    if (index === -1) {
+  const handleBreadcrumbClick = (folderId?: string) => {
+    if (!folderId) {
       router.push("/file-manager");
     } else {
-      const newPath = pathSegments.slice(0, index + 1).join("/");
-      router.push(`?path=${encodeURIComponent(newPath)}`);
+      router.push(`?folderId=${folderId}`);
     }
   };
 
@@ -228,6 +279,62 @@ export function FileManager() {
     setSelectedItems(newSelectedItems);
   };
 
+  const handleDelete = async (itemId: string) => {
+    if (!confirm("Are you sure you want to delete this item?")) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await deleteFileNode(itemId);
+      toast.success("Item deleted successfully");
+      fetchFiles(); // Refresh the list
+      if (selectedItem?.id === itemId) {
+        setSelectedItem(null);
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Failed to delete item");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.size === 0) return;
+    if (!confirm(`Delete ${selectedItems.size} selected item(s)?`)) return;
+
+    setDeleting(true);
+    try {
+      await Promise.all([...selectedItems].map((id) => deleteFileNode(id)));
+      toast.success("Selected items deleted successfully");
+      setSelectedItems(new Set());
+      fetchFiles();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete selected items");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDateShort = (date: Date) => {
+    const d = new Date(date);
+    return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}.${d.getFullYear().toString().slice(-2)}`;
+  };
+
   const FileDetailContent = ({ selectedItem }: { selectedItem: FileItem }) => {
     return (
       <div className="space-y-6 px-4">
@@ -245,29 +352,41 @@ export function FileManager() {
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Type</span>
-              <span className="text-foreground text-sm capitalize">{selectedItem.type}</span>
+              <span className="text-foreground text-sm capitalize">
+                {selectedItem.type}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Size</span>
-              <span className="text-foreground text-sm">{selectedItem.size}</span>
+              <span className="text-foreground text-sm">
+                {selectedItem.size}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Owner</span>
-              <span className="text-foreground text-sm">ArtTemplate</span>
+              <span className="text-foreground text-sm">
+                {selectedItem.ownerName}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Location</span>
               <span className="text-sm">
-                {currentPath ? `My Files/${currentPath}` : "My Files"}
+                {breadcrumbData.length > 0
+                  ? `My Files/${breadcrumbData.map((b) => b.name).join("/")}`
+                  : "My Files"}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Modified</span>
-              <span className="text-foreground text-sm">Sep 17, 2020 4:25</span>
+              <span className="text-foreground text-sm">
+                {formatDate(selectedItem.date)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">Created</span>
-              <span className="text-foreground text-sm">Sep 10, 2020 2:25</span>
+              <span className="text-foreground text-sm">
+                {formatDate(selectedItem.date)}
+              </span>
             </div>
           </div>
         </div>
@@ -295,14 +414,25 @@ export function FileManager() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-[calc(100vh-var(--header-height))] items-center justify-center">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading files...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex p-4">
-      <div className="border-border min-w-0 flex-1 space-y-4">
+    <div className="flex">
+      <div className="border-border min-w-0 flex-1">
         {/* Breadcrumb Navigation */}
         <div className="flex justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold tracking-tight">File Manager</h1>
-            {pathSegments.length > 0 && (
+            {breadcrumbData.length > 0 && (
               <>
                 <Separator
                   orientation="vertical"
@@ -313,19 +443,23 @@ export function FileManager() {
                     <BreadcrumbList>
                       <BreadcrumbItem
                         className="cursor-pointer"
-                        onClick={() => handleBreadcrumbClick(-1)}>
+                        onClick={() => handleBreadcrumbClick()}
+                      >
                         <Home className="h-4 w-4" />
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
-                      {pathSegments.map((segment, i) => (
+                      {breadcrumbData.map((crumb, i) => (
                         <>
                           <BreadcrumbItem
                             className="cursor-pointer"
-                            key={i}
-                            onClick={() => handleBreadcrumbClick(i)}>
-                            {segment}
+                            key={crumb.id}
+                            onClick={() => handleBreadcrumbClick(crumb.id)}
+                          >
+                            {crumb.name}
                           </BreadcrumbItem>
-                          {i < pathSegments.length - 1 && <BreadcrumbSeparator />}
+                          {i < breadcrumbData.length - 1 && (
+                            <BreadcrumbSeparator key={`sep-${crumb.id}`} />
+                          )}
                         </>
                       ))}
                     </BreadcrumbList>
@@ -336,80 +470,203 @@ export function FileManager() {
           </div>
 
           <div className="border-border flex items-center justify-between gap-2">
-            <FileUploadDialog />
+            <FileUploadDialog
+              parentId={currentFolderId}
+              refreshFiles={fetchFiles}
+            />
+            <CreateFolderDialog
+              parentId={currentFolderId}
+              refreshFiles={fetchFiles}
+            />
           </div>
         </div>
 
-        <div className="flex border-t">
+        {/* File Manager Analytics */}
+        <FileManagerAnalytics />
+
+        {/* File Manager Header */}
+        <FileManagerHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filterType={filterType}
+          setFilterType={setFilterType}
+          sortBy={sortBy}
+          setSortBy={(value: SortOption) => handleSortChange(value)}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
+
+        {selectedItems.size > 0 && (
+          <div
+            className="flex items-center justify-between bg-muted border p-3 mt-3 rounded-md shadow-sm"
+          >
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Checkbox
+                checked={
+                  selectedItems.size === sortedAndFilteredItems.length &&
+                  sortedAndFilteredItems.length > 0
+                }
+                onClick={toggleSelectAll}
+              />
+              <span>{selectedItems.size} selected</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete Selected"
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedItems(new Set())}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex mt-5 border-t">
           {/* File List */}
           <div className="min-w-0 grow">
-            {sortedAndFilteredItems.map((item) => (
-              <div
-                key={item.id}
-                className={cn(
-                  "hover:bg-muted flex cursor-pointer items-center justify-between border-b p-2 lg:p-4",
-                  selectedItem?.id === item.id && "bg-muted"
-                )}
-                onClick={() => handleItemClick(item)}>
-                <div className="flex min-w-0 items-center space-x-4">
-                  <Checkbox
-                    defaultChecked={selectedItem?.id === item.id}
-                    checked={selectedItems.has(item.id)}
-                    onClick={(e) => toggleItemSelection(item.id, e)}
-                  />
-                  <div className="shrink-0">{getFileIcon(item.icon)}</div>
-                  <div className="min-w-0 truncate">{item.name}</div>
-                </div>
+            {viewMode === "list" ? (
+              // ===== LIST VIEW =====
+              <div>
+                {sortedAndFilteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "hover:bg-muted flex cursor-pointer items-center justify-between border-b p-2 lg:p-4",
+                      selectedItem?.id === item.id && "bg-muted"
+                    )}
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <div className="flex min-w-0 items-center space-x-4">
+                      <Checkbox
+                        checked={selectedItems.has(item.id)}
+                        onClick={(e) => toggleItemSelection(item.id, e)}
+                      />
+                      <div className="shrink-0">{getFileIcon(item.icon)}</div>
+                      <div className="min-w-0 truncate">{item.name}</div>
+                    </div>
 
-                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                  <span className="hidden w-16 text-right lg:inline">{item.date}</span>
-                  <span className="hidden w-16 text-right lg:inline">{item.size}</span>
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={item.owner.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="text-xs">{item.owner.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontalIcon />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Compress</DropdownMenuItem>
-                      <DropdownMenuItem>Archive</DropdownMenuItem>
-                      <DropdownMenuItem>Share</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>Move</DropdownMenuItem>
-                      <DropdownMenuItem>Copy</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600!">Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                      <span className="hidden w-20 text-right lg:inline">
+                        {formatDateShort(item.date)}
+                      </span>
+                      <span className="hidden w-16 text-right lg:inline">
+                        {item.size}
+                      </span>
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage
+                          src={item.ownerAvatar || "/placeholder.svg"}
+                        />
+                        <AvatarFallback className="text-xs">
+                          {item.ownerName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={deleting}
+                          >
+                            <MoreHorizontalIcon />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Compress</DropdownMenuItem>
+                          <DropdownMenuItem>Archive</DropdownMenuItem>
+                          <DropdownMenuItem>Share</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>Move</DropdownMenuItem>
+                          <DropdownMenuItem>Copy</DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(item.id);
+                            }}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              // ===== GRID VIEW =====
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+                {sortedAndFilteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => handleItemClick(item)}
+                    className={cn(
+                      "group relative flex flex-col items-center justify-center rounded-lg border p-4 cursor-pointer hover:bg-muted transition-all",
+                      selectedItem?.id === item.id && "bg-muted"
+                    )}
+                  >
+                    {/* Checkbox in top-left corner */}
+                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Checkbox
+                        checked={selectedItems.has(item.id)}
+                        onClick={(e) => toggleItemSelection(item.id, e)}
+                      />
+                    </div>
 
-            {sortedAndFilteredItems.length === 0 && searchQuery && (
-              <div className="text-muted-foreground flex items-center justify-center p-8 text-center">
-                No files or folders found matching &#34;{searchQuery}&#34;
+                    <div className="mb-2">{getFileIcon(item.icon)}</div>
+                    <div className="truncate w-[200px] text-center text-sm font-medium">
+                      {item.name}
+                    </div>
+
+                    <div className="text-muted-foreground text-xs mt-1">
+                      {item.size} • {formatDateShort(item.date)}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {sortedAndFilteredItems.length === 0 && !searchQuery && currentPath && (
+            {/* Empty states and pagination remain the same */}
+            {sortedAndFilteredItems.length === 0 && searchQuery && (
+              <div className="text-muted-foreground flex items-center justify-center p-8 text-center">
+                No files or folders found matching “{searchQuery}”
+              </div>
+            )}
+
+            {sortedAndFilteredItems.length === 0 && !searchQuery && (
               <div className="flex h-[calc(100vh-var(--header-height)-3rem)] flex-col items-center justify-center">
                 <div className="mx-auto max-w-md space-y-4 text-center">
                   <FolderPlus className="mx-auto size-14 opacity-50" />
-                  <h2 className="text-muted-foreground">This folder is empty.</h2>
+                  <h2 className="text-muted-foreground">
+                    This folder is empty.
+                  </h2>
                   <div>
-                    <Button>
-                      <UploadIcon />
-                      Upload
-                    </Button>
+                    <FileUploadDialog
+                      parentId={currentFolderId}
+                      refreshFiles={fetchFiles}
+                    />
                   </div>
                 </div>
               </div>
             )}
 
-            {pathSegments.length == 0 && (
+            {!currentFolderId && sortedAndFilteredItems.length > 0 && (
               <div className="mt-4">
                 <FileManagerPagination />
               </div>
@@ -423,7 +680,8 @@ export function FileManager() {
                 onClick={() => setSelectedItem(null)}
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-0">
+                className="absolute top-2 right-0"
+              >
                 <XIcon />
               </Button>
               <FileDetailContent selectedItem={selectedItem} />

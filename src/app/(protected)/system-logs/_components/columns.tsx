@@ -32,18 +32,18 @@ export const columns: ColumnDef<LogsWithUser>[] = [
             <Image
               className="object-cover rounded-md"
               fill
-              src={raw.user.image || ""}
-              alt={raw.user.username}
+              src={raw.user?.image || ""}
+              alt={raw.user?.username || ""}
             />
           </div>
           <div>
-            <span className="font-semibold">{raw.user.username}</span>
+            <span className="font-semibold">{raw.user?.username}</span>
             <div
-              title={raw.user.id}
+              title={raw.user?.id}
               className="text-xs cursor-pointer text-primary gap-2 flex items-center"
             >
               <span className="w-[180px] hover:underline truncate overflow-hidden whitespace-nowrap">
-                {raw.user.id}
+                {raw.user?.id}
               </span>
               {copied ? (
                 <CheckIcon className="size-3 text-green-600" />
@@ -64,7 +64,7 @@ export const columns: ColumnDef<LogsWithUser>[] = [
       );
     },
     filterFn: (row, columnId, filterValue) => {
-      const name = (row.original.user.username ?? "").toLowerCase();
+      const name = (row.original.user?.username ?? "").toLowerCase();
       const id = (row.original.id ?? "").toLowerCase();
       const search = filterValue.toLowerCase();
 

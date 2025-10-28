@@ -51,6 +51,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { DataTableFilter } from "./data-table-filter";
+import { getAllHouseholds } from '@/actions';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -71,6 +72,9 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
 
   const [search, setSearch] = React.useState("");
+  const [householdOptions, setHouseholdOptions] = React.useState<
+    { label: string; value: string }[]
+  >([])
 
   const table = useReactTable({
     data,
@@ -101,6 +105,20 @@ export function DataTable<TData, TValue>({
     return () => clearTimeout(timeout);
   }, [search, table]);
 
+  React.useEffect(() => {
+    async function fetchHouseholds() {
+      const res = await getAllHouseholds()
+      if (res.success) {
+        const opts = res.data.map((h) => ({
+          label: h.householdNumber,
+          value: h.id
+        }))
+        setHouseholdOptions(opts)
+      }
+    }
+    fetchHouseholds()
+  }, [])
+
   return (
     <div>
       <div className="flex items-center py-4">
@@ -111,13 +129,13 @@ export function DataTable<TData, TValue>({
             onChange={(e) => setSearch(e.target.value)}
             className="w-[350px] rounded-none"
           />
-          {/* {table.getColumn("category") && (
+          {table.getColumn("household") && (
             <DataTableFilter
-              column={table.getColumn("category")}
-              title="Filter by category"
-              options={TIPS_CATEGORY}
+              column={table.getColumn("household")}
+              title="Filter by household"
+              options={householdOptions}
             />
-          )} */}
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

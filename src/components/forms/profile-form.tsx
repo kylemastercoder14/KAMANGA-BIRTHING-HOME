@@ -17,6 +17,7 @@ import ReviewSubmit from "@/components/forms/profile-step/review";
 import { useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { createProfile, updateProfile } from "@/actions";
 
 const STORAGE_KEY = "kamanga-profile-form-draft";
 
@@ -66,6 +67,7 @@ const ProfileForm = ({
   const getDefaultValues = (): ProfileFormData => ({
     householdNumber: initialData?.household?.householdNumber || "",
     monthlyIncome: initialData?.household?.monthlyIncome || 0,
+    location: initialData?.household?.location || "Sitio 1",
     areYou4ps: initialData?.areYou4ps ?? false,
     areYouIps: initialData?.areYouIps ?? false,
     areYouPwd: initialData?.areYouPwd ?? false,
@@ -112,40 +114,25 @@ const ProfileForm = ({
     hypertension: initialData?.hypertension || "",
     diabetes: initialData?.diabetes || "",
     bothSickness: initialData?.bothSickness || "",
-    oscaNumber: initialData?.oscaNumber || 0,
+    oscaNumber: initialData?.oscaNumber ?? 0,
     pwdInformation: initialData?.pwdInformation || "",
 
-    facilityBasedDeliveries: initialData?.facilityBasedDelivery?.map(
-      (d: any) => ({
+    facilityBasedDeliveries:
+      initialData?.facilityBasedDelivery?.map((d: any) => ({
         label: d?.label ?? "Live Birth",
         facilityMale: d?.facilityMale ?? false,
         facilityFemale: d?.facilityFemale ?? false,
         nonFacilityMale: d?.nonFacilityMale ?? false,
         nonFacilityFemale: d?.nonFacilityFemale ?? false,
-      })
-    ) ?? [
-      {
-        label: "Live Birth",
-        facilityMale: false,
-        facilityFemale: false,
-        nonFacilityMale: false,
-        nonFacilityFemale: false,
-      },
-    ],
+      })) ?? [],
 
-    babyData: initialData?.babyData?.map((b: any, i: number) => ({
-      label: b?.label ?? `Child ${i + 1}`,
-      height: b?.height ?? 0,
-      weight: b?.weight ?? 0,
-      muac: b?.muac ?? 0,
-    })) ?? [
-      {
-        label: "Child 1",
-        height: 0,
-        weight: 0,
-        muac: 0,
-      },
-    ],
+    babyData:
+      initialData?.babyData?.map((b: any, i: number) => ({
+        label: b?.label ?? `Child ${i + 1}`,
+        height: b?.height ?? 0,
+        weight: b?.weight ?? 0,
+        muac: b?.muac ?? 0,
+      })) ?? [],
   });
 
   const form = useForm<ProfileFormData>({
@@ -191,7 +178,7 @@ const ProfileForm = ({
 
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ["householdNumber", "monthlyIncome"];
+        fieldsToValidate = ["householdNumber", "monthlyIncome", "location"];
         break;
       case 2:
         fieldsToValidate = [
@@ -208,18 +195,19 @@ const ProfileForm = ({
         ];
         break;
       case 3:
-        fieldsToValidate = ["sanitizedToilet"];
+        fieldsToValidate = ["sanitizedToilet", "constructedDateToilet"];
         break;
       case 4:
+        fieldsToValidate = ["facilityBasedDeliveries"];
         break;
       case 5:
+        break;
       case 6:
         break;
     }
 
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
-      // ✅ Save to localStorage before going to next step
       const currentData = form.getValues();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
@@ -232,6 +220,8 @@ const ProfileForm = ({
       if (currentStep < steps.length) {
         setCurrentStep((prev) => prev + 1);
       }
+    } else {
+      toast.error("Please fix the errors before continuing");
     }
   };
 
@@ -245,12 +235,12 @@ const ProfileForm = ({
     setIsSubmitting(true);
     try {
       if (initialData) {
-        // await updateProfile(data, initialData.id);
+        await updateProfile(data, initialData.id);
         localStorage.removeItem(STORAGE_KEY);
         toast.success("Profile updated successfully");
         router.push("/barangay-profiling");
       } else {
-        // await createProfile(data);
+        await createProfile(data);
         localStorage.removeItem(STORAGE_KEY);
         toast.success("Profile created successfully");
         router.push("/barangay-profiling");
@@ -299,7 +289,7 @@ const ProfileForm = ({
                   ? "bg-green-600 text-white"
                   : currentStep === step.id
                   ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-600 dark:text-gray-300"
+                  : "bg-gray-200 text-gray-600 dark:text-gray-600"
               )}
             >
               {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}
@@ -307,7 +297,9 @@ const ProfileForm = ({
             <div
               className={cn(
                 "mt-2 text-center text-sm font-medium",
-                currentStep >= step.id ? "text-gray-800" : "text-gray-500"
+                currentStep >= step.id
+                  ? "text-gray-800 dark:text-gray-300"
+                  : "text-gray-400 dark:text-gray-500"
               )}
             >
               {step.title}
@@ -325,35 +317,48 @@ const ProfileForm = ({
       </div>
       {/* Step Content */}
       <div className="mt-8">{renderStepContent()}</div>
+      {currentStep === 6 && Object.keys(form.formState.errors).length > 0 && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 font-semibold">
+            Please fix the following errors:
+          </p>
+          <ul className="mt-2 space-y-1">
+            {Object.entries(form.formState.errors).map(([field, error]) => (
+              <li key={field} className="text-sm text-red-600">
+                {field}: {error?.message as string}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* Step Navigation */}
-<div className="mt-8 flex items-center justify-between border-t pt-6">
-  <Button
-    variant="outline"
-    onClick={handlePrevious}
-    disabled={currentStep === 1}
-  >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
-  </Button>
+      <div className="mt-8 flex items-center justify-between border-t pt-6">
+        <Button
+          variant="outline"
+          onClick={handlePrevious}
+          disabled={currentStep === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Previous</span>
+        </Button>
 
-  {currentStep === 6 ? (
-    // ✅ Show only when step is 6 (Review & Submit)
-    <Button
-      onClick={form.handleSubmit(onSubmit)}
-      disabled={isSubmitting}
-      className="bg-green-600 hover:bg-green-700 text-white"
-    >
-      {isSubmitting ? "Submitting..." : "Submit"}
-    </Button>
-  ) : (
-    // ✅ Show Continue button for steps 1–5
-    <Button onClick={handleNext}>
-      <span>Continue</span>
-      <ChevronRight className="h-4 w-4" />
-    </Button>
-  )}
-</div>
-
+        {currentStep === 6 ? (
+          // ✅ Show only when step is 6 (Review & Submit)
+          <Button
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Button>
+        ) : (
+          // ✅ Show Continue button for steps 1–5
+          <Button onClick={handleNext}>
+            <span>Continue</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

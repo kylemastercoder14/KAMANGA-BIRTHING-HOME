@@ -10,9 +10,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { FileNode } from "@prisma/client";
 
-const GalleryDocumentation = () => {
-  // 🖼️ Base 5 Unsplash images
+const GalleryDocumentation = ({ gallery }: { gallery: FileNode[] }) => {
+  // 🖼️ Default base Unsplash images
   const baseImages = [
     "https://images.unsplash.com/photo-1528218635780-5952720c9729?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1176",
     "https://images.unsplash.com/photo-1493894473891-10fc1e5dbd22?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1169",
@@ -21,18 +22,38 @@ const GalleryDocumentation = () => {
     "https://images.unsplash.com/photo-1588979355313-6711a095465f?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=672",
   ];
 
-  // 🔁 Generate 20 images by looping through the 5 base ones
-  const images = useMemo(
-    () =>
-      Array.from({ length: 20 }).map(
-        (_, i) => baseImages[i % baseImages.length] // Reuse in loop
-      ),
-    []
-  );
+  // ✅ Compute final image list
+  const images = useMemo(() => {
+    if (gallery && gallery.length > 0) {
+      return gallery
+        .filter((file) => file.icon === "image")
+        .map((file) => {
+          // ✅ Encode file name to avoid issues with spaces or special chars
+          const encodedName = encodeURIComponent(file.name);
+          return `/file-manager/${encodedName}`;
+        });
+    }
+
+    // Fallback: if gallery empty, use default Unsplash set
+    return baseImages;
+  }, [gallery]);
+
+  // 🚫 Empty state check
+  if (!images || images.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground border rounded-xl">
+        <p className="text-lg font-medium">No gallery images found</p>
+        <p className="text-sm">Please upload some images to display here.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full overflow-hidden">
-      <Carousel opts={{ align: "center" }} className="w-full max-w-[99rem] mx-auto">
+      <Carousel
+        opts={{ align: "center" }}
+        className="w-full max-w-[99rem] mx-auto"
+      >
         <CarouselContent>
           {images.map((img, index) => (
             <CarouselItem

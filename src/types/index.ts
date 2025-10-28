@@ -1,8 +1,10 @@
 import {
   BabyData,
   FacilityBasedDelivery,
+  HealthProgram,
   HouseHold,
   Profile,
+  ProgramSection,
   SystemLogs,
   User,
 } from "@prisma/client";
@@ -35,9 +37,26 @@ export interface ProfilingProps extends Profile {
 }
 
 export interface LogsWithUser extends SystemLogs {
-  user: {
-    username: string;
-    id: string;
-    image: string;
-  };
+  user: User | null;
+}
+
+export interface HealthProgramWithSections extends HealthProgram {
+  sections: ProgramSection[];
+}
+
+export interface HouseholdWithProfile extends HouseHold {
+  profiles: Profile[];
+}
+
+export interface FileNodeWithChildren {
+  id: string;
+  name: string;
+  type: "file" | "folder";
+  icon: string;
+  date: Date;
+  size: string;
+  ownerName: string;
+  ownerAvatar: string;
+  parentId: string | null;
+  children: FileNodeWithChildren[];
 }

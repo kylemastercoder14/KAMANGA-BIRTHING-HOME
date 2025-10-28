@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "scontent.fmnl19-1.fna.fbcdn.net",
       },
+      {
+        protocol: "https",
+        hostname: "one-market-philippines.s3.ap-southeast-2.amazonaws.com",
+      },
     ],
   },
 };

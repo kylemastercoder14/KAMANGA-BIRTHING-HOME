@@ -1,7 +1,7 @@
 import { addDays, setHours, setMinutes, subDays } from "date-fns";
-import { CalendarEvent } from "@/types";
+import { Events } from "@prisma/client";
 
-export const sampleEvents: CalendarEvent[] = [
+export const sampleEvents: Events[] = [
   {
     id: "1",
     title: "Prenatal Checkup – Sitio 1 Mothers",
@@ -12,15 +12,22 @@ export const sampleEvents: CalendarEvent[] = [
     allDay: true,
     color: "sky",
     location: "Birthing Home – Examination Room 1",
+    createdAt: new Date("2024-10-05T09:30:00"),
+    updatedAt: new Date("2024-10-12T14:20:00"),
+    userId: null,
   },
   {
     id: "2",
-    title: "Doctor’s Consultation – Dr. Maria Santos",
+    title: "Doctor's Consultation – Dr. Maria Santos",
     description: "OB-GYN consultation and ultrasound appointments.",
     start: setMinutes(setHours(subDays(new Date(), 3), 9), 0),
     end: setMinutes(setHours(subDays(new Date(), 3), 12), 0),
     color: "emerald",
     location: "Birthing Home – Consultation Room",
+    createdAt: new Date("2024-10-08T11:15:00"),
+    updatedAt: new Date("2024-10-15T16:45:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "3",
@@ -31,6 +38,10 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(new Date(), 16), 0),
     color: "amber",
     location: "Community Hall – Lobo Birthing Home",
+    createdAt: new Date("2024-10-10T08:00:00"),
+    updatedAt: new Date("2024-10-18T10:30:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "4",
@@ -41,6 +52,9 @@ export const sampleEvents: CalendarEvent[] = [
     allDay: true,
     color: "rose",
     location: "Birthing Home – Main Lobby",
+    createdAt: new Date("2024-10-12T13:45:00"),
+    updatedAt: new Date("2024-10-20T09:15:00"),
+    userId: null,
   },
   {
     id: "5",
@@ -51,16 +65,23 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 2), 15), 0),
     color: "orange",
     location: "Staff Conference Room",
+    createdAt: new Date("2024-10-03T10:20:00"),
+    updatedAt: new Date("2024-10-17T15:00:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "6",
     title: "Expected Delivery – Baby Dela Cruz",
-    description: "Estimated due date for Mrs. Dela Cruz’s delivery.",
+    description: "Estimated due date for Mrs. Dela Cruz's delivery.",
     start: addDays(new Date(), 3),
     end: addDays(new Date(), 3),
     allDay: true,
     color: "violet",
     location: "Birthing Room 2",
+    createdAt: new Date("2024-10-07T14:30:00"),
+    updatedAt: new Date("2024-10-19T11:20:00"),
+    userId: null,
   },
   {
     id: "7",
@@ -71,6 +92,10 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 5), 12), 0),
     color: "sky",
     location: "Birthing Home – Room 3",
+    createdAt: new Date("2024-10-09T16:10:00"),
+    updatedAt: new Date("2024-10-21T13:40:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "8",
@@ -81,6 +106,9 @@ export const sampleEvents: CalendarEvent[] = [
     allDay: true,
     color: "rose",
     location: "Community Health Center",
+    createdAt: new Date("2024-10-11T07:50:00"),
+    updatedAt: new Date("2024-10-22T08:30:00"),
+    userId: null,
   },
   {
     id: "9",
@@ -91,6 +119,10 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 7), 11), 30),
     color: "violet",
     location: "Birthing Home – Training Room",
+    createdAt: new Date("2024-10-04T12:25:00"),
+    updatedAt: new Date("2024-10-16T14:55:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "10",
@@ -101,6 +133,10 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 10), 16), 0),
     color: "emerald",
     location: "Municipal Health Office",
+    createdAt: new Date("2024-10-06T09:40:00"),
+    updatedAt: new Date("2024-10-23T10:15:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "11",
@@ -112,6 +148,9 @@ export const sampleEvents: CalendarEvent[] = [
     allDay: true,
     color: "amber",
     location: "Birthing Home – Function Hall",
+    createdAt: new Date("2024-10-13T15:20:00"),
+    updatedAt: new Date("2024-10-24T11:45:00"),
+    userId: null,
   },
   {
     id: "12",
@@ -122,6 +161,10 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 13), 11), 0),
     color: "orange",
     location: "Storage and Sanitation Area",
+    createdAt: new Date("2024-10-02T08:15:00"),
+    updatedAt: new Date("2024-10-25T09:50:00"),
+    userId: null,
+    allDay: false,
   },
   {
     id: "13",
@@ -132,5 +175,9 @@ export const sampleEvents: CalendarEvent[] = [
     end: setMinutes(setHours(addDays(new Date(), 14), 17), 0),
     color: "rose",
     location: "Community Center – Sitio 2",
+    createdAt: new Date("2024-10-14T10:05:00"),
+    updatedAt: new Date("2024-10-26T16:30:00"),
+    userId: null,
+    allDay: false,
   },
 ];

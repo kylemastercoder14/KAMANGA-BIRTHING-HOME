@@ -4,12 +4,13 @@ import { useMemo } from "react";
 import { RiCalendarEventLine } from "@remixicon/react";
 import { addDays, format, isToday } from "date-fns";
 
-import { AgendaDaysToShow, CalendarEvent, EventItem, getAgendaEventsForDay } from "./";
+import { AgendaDaysToShow, EventItem, getAgendaEventsForDay } from "./";
+import { Events } from '@prisma/client';
 
 interface AgendaViewProps {
   currentDate: Date;
-  events: CalendarEvent[];
-  onEventSelect: (event: CalendarEvent) => void;
+  events: Events[];
+  onEventSelect: (event: Events) => void;
 }
 
 export function AgendaView({ currentDate, events, onEventSelect }: AgendaViewProps) {
@@ -19,7 +20,7 @@ export function AgendaView({ currentDate, events, onEventSelect }: AgendaViewPro
     return Array.from({ length: AgendaDaysToShow }, (_, i) => addDays(new Date(currentDate), i));
   }, [currentDate]);
 
-  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
+  const handleEventClick = (event: Events, e: React.MouseEvent) => {
     e.stopPropagation();
     console.log("Agenda view event clicked:", event);
     onEventSelect(event);

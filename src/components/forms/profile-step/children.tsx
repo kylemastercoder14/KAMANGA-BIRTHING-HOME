@@ -75,7 +75,7 @@ const ChildrenDetails = ({
               <TableHead>Label</TableHead>
               <TableHead>Height (cm)</TableHead>
               <TableHead>Weight (kg)</TableHead>
-              <TableHead>MUAC (cm)</TableHead>
+              <TableHead>MUAC</TableHead>
             </TableRow>
           </TableHeader>
 

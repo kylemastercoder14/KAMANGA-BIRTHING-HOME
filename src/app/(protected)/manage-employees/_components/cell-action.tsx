@@ -16,19 +16,20 @@ import {
 import { useRouter } from "next/navigation";
 import AlertModal from "@/components/ui/alert-modal";
 import { toast } from "sonner";
-import { User } from '@prisma/client';
+import { User } from "@prisma/client";
+import { deleteEmployee } from "@/actions";
 
 const CellActions = ({ data }: { data: User }) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const handleDelete = async () => {
     try {
-    //   const response = await deleteProduct(product.id);
-    //   if (response.error) {
-    //     toast.error(response.error);
-    //     return;
-    //   }
-      toast.success("Product deleted successfully");
+      const response = await deleteEmployee(data.id);
+      if (response.error) {
+        toast.error(response.error);
+        return;
+      }
+      toast.success("Employee deleted successfully");
       router.refresh();
     } catch (error) {
       console.log(error);
