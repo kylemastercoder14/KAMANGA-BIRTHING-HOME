@@ -58,7 +58,7 @@ export function CreateFolderDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <Button variant="outline" onClick={() => setOpen(true)}>
         <Folder className="size-4" />
-        New Folder
+        <span className='lg:block hidden'>New Folder</span>
       </Button>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>

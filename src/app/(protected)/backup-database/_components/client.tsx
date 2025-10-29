@@ -65,7 +65,7 @@ const Client = ({ data }: { data: BackupHistory[] }) => {
           </Button>
         </div>
       </Modal>
-      <div className="flex items-center justify-between">
+      <div className="flex lg:flex-row flex-col lg:items-center gap-3 lg:justify-between">
         <Heading
           title="Database Backup & Restore"
           description="Backup and restore your data whenever you want"

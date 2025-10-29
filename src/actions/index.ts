@@ -1071,3 +1071,13 @@ export async function updateProfileEmployee(userId: string, data: FormData) {
     return { success: false, message: "Error updating profile" };
   }
 }
+
+export const getAllPrograms = async () => {
+  const programs = await db.healthProgram.findMany({
+    include: {
+      sections: true,
+    },
+  });
+
+  return programs;
+};

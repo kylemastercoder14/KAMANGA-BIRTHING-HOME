@@ -43,7 +43,7 @@ export function DataTableFilter<TData, TValue>({
       <PopoverTrigger asChild>
         <Button variant="outline" className="rounded-none border-dashed">
           <PlusCircle className="h-4 w-4" />
-          {title}
+          <span className='lg:block hidden'>{title}</span>
           {selectedValues?.size > 0 && (
             <>
               <div className="hidden space-x-1 lg:flex">

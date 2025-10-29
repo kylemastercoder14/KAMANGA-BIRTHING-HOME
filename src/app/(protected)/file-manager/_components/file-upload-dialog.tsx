@@ -105,7 +105,7 @@ export function FileUploadDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)}>
-        <UploadIcon /> Upload
+        <UploadIcon /> <span className='lg:block hidden'>Upload</span>
       </Button>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>

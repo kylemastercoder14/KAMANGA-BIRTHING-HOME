@@ -79,7 +79,7 @@ export function NavUser({
                 {user.name.charAt(0)} {user.name.charAt(1)}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="lg:grid hidden flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
               <span className="text-muted-foreground truncate text-xs">
                 {user.email}

@@ -121,13 +121,13 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-2 py-4">
         <div className="flex items-center gap-2">
           <Input
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-[350px] rounded-none"
+            className="lg:w-[350px] w-full rounded-none"
           />
           {table.getColumn("household") && (
             <DataTableFilter
@@ -141,7 +141,7 @@ export function DataTable<TData, TValue>({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               <Settings2 className="h-4 w-4" />
-              Columns
+              <span className='lg:block hidden'>Columns</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

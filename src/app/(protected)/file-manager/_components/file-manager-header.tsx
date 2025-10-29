@@ -37,12 +37,12 @@ const FileManagerHeader: React.FC<FileManagerHeaderProps> = ({
   setViewMode,
 }) => {
   return (
-    <div className="flex mt-5 items-center justify-between">
-      <div className="flex items-center gap-3">
-        <h3 className="text-xl font-semibold">All Files</h3>
+    <div className="flex mt-5 items-center lg:flex-row flex-col gap-3 justify-between">
+      <div className="flex items-center w-full gap-3">
+        <h3 className="text-xl lg:block hidden font-semibold">All Files</h3>
 
         <Select onValueChange={setFilterType} value={filterType}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="lg:w-[180px] w-full">
             <SelectValue placeholder="File Type" />
           </SelectTrigger>
           <SelectContent>
@@ -57,7 +57,7 @@ const FileManagerHeader: React.FC<FileManagerHeaderProps> = ({
         </Select>
 
         <Select onValueChange={setSortBy} value={sortBy}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="lg:w-[180px] w-full">
             <SelectValue placeholder="Sort By" />
           </SelectTrigger>
           <SelectContent>

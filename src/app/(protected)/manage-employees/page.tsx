@@ -15,7 +15,7 @@ const Page = async () => {
   });
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex lg:flex-row flex-col lg:items-center gap-3 lg:justify-between">
         <Heading
           title="Employee Management"
           description="Browse and manage all employees in your system."

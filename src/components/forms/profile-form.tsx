@@ -276,7 +276,7 @@ const ProfileForm = ({
   return (
     <div className="mt-6">
       {/* Step Indicator */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-centerflex-wrap justify-between">
         {steps.map((step) => (
           <div
             key={step.id}
@@ -284,7 +284,7 @@ const ProfileForm = ({
           >
             <div
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-300",
+                "flex size-10 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-300",
                 currentStep > step.id
                   ? "bg-green-600 text-white"
                   : currentStep === step.id
@@ -296,7 +296,7 @@ const ProfileForm = ({
             </div>
             <div
               className={cn(
-                "mt-2 text-center text-sm font-medium",
+                "mt-2 text-center lg:block hidden text-sm font-medium",
                 currentStep >= step.id
                   ? "text-gray-800 dark:text-gray-300"
                   : "text-gray-400 dark:text-gray-500"

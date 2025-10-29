@@ -29,7 +29,7 @@ export default function LoginPage() {
       </div>
       <div className="flex bg-[url('/fam1.jpg')] bg-cover flex-col gap-4">
         <div className="flex flex-1 flex-col backdrop-blur-sm gap-5 items-center justify-center">
-          <div className="w-full max-w-lg">
+          <div className="w-full lg:px-0 px-5 max-w-lg">
             <LoginForm />
           </div>
         </div>

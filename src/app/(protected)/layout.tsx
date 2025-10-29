@@ -30,7 +30,7 @@ const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
           <SiteHeader user={user} />
           {/* bg-gradient-to-b min-h-screen from-transparent via-green-700/30 to-green-900/50 */}
           <main className="bg-background min-h-screen">
-            <div className="p-5">{children}</div>
+            <div className="lg:p-5 p-3">{children}</div>
           </main>
         </SidebarInset>
       </SidebarProvider>

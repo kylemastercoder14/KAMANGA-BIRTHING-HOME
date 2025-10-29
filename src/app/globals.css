@@ -275,3 +275,7 @@
   border-radius: 0.25em;
   font-family: monospace;
 }
+
+html {
+  scroll-behavior: smooth;
+}

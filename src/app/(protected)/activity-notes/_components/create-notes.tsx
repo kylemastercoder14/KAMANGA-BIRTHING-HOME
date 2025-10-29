@@ -30,7 +30,7 @@ const CreateNotes = ({ userId }: { userId: string }) => {
   return (
     <>
       <Modal
-        className="max-w-5xl!"
+        className="max-w-5xl! overflow-y-auto h-[90vh]"
         title="Create new activity note"
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

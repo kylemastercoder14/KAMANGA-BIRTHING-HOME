@@ -8,12 +8,12 @@ export function ProgramHeader({ title }: { title: string | null }) {
   const router = useRouter();
   return (
     <header className="bg-card/50 border-b backdrop-blur-sm">
-      <div className="pb-4 lg:pt-0 pt-4 lg:px-0 px-4">
+      <div className="pb-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button onClick={() => router.push("/health-programs")} variant="outline" size="sm" className="gap-2">
+            <Button onClick={() => router.push("/")} variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              <span className='lg:block hidden'>Healh Programs</span>
+              Homepage
             </Button>
             <div className="bg-border h-6 w-px" />
             <h1 className="text-lg font-medium">{title}</h1>

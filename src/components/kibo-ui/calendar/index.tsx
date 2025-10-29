@@ -128,13 +128,13 @@ const Combobox = ({
       <PopoverTrigger asChild>
         <Button
           aria-expanded={open}
-          className={cn("w-40 justify-between capitalize", className)}
+          className={cn("lg:w-40 w-24 justify-between capitalize", className)}
           variant="outline"
         >
           {value
             ? data.find((item) => item.value === value)?.label
             : labels.button}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-40 p-0">
@@ -416,10 +416,10 @@ export const CalendarDatePagination = ({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Button onClick={handlePreviousMonth} size="icon" variant="ghost">
-        <ChevronLeftIcon size={16} />
+        <ChevronLeftIcon className='size-5' />
       </Button>
       <Button onClick={handleNextMonth} size="icon" variant="ghost">
-        <ChevronRightIcon size={16} />
+        <ChevronRightIcon className='size-5' />
       </Button>
     </div>
   );
@@ -430,7 +430,7 @@ export type CalendarDateProps = {
 };
 
 export const CalendarDate = ({ children }: CalendarDateProps) => (
-  <div className="flex items-center justify-between p-3">{children}</div>
+  <div className="flex items-center justify-between">{children}</div>
 );
 
 export type CalendarHeaderProps = {
