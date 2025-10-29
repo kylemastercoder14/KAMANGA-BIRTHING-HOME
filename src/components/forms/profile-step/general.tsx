@@ -533,7 +533,7 @@ const GeneralInformation = ({
                       </FormLabel>
                       <FormControl>
                         <DatePicker
-                          value={field.value}
+                          value={field.value ?? undefined}
                           onChange={(val) => {
                             const date = val ? new Date(val) : undefined;
                             field.onChange(date);
@@ -557,7 +557,7 @@ const GeneralInformation = ({
                       </FormLabel>
                       <FormControl>
                         <DatePicker
-                          value={field.value}
+                          value={field.value ?? undefined}
                           onChange={(val) => {
                             const date = val ? new Date(val) : undefined;
                             field.onChange(date);
@@ -580,7 +580,9 @@ const GeneralInformation = ({
                       <FormControl>
                         <div className="flex border border-input p-3 rounded-md items-center justify-between">
                           <div>
-                            <div className="font-medium">Exclusive Breastfeeding (0-6 months)</div>
+                            <div className="font-medium">
+                              Exclusive Breastfeeding (0-6 months)
+                            </div>
                             <div className="text-sm text-gray-500">
                               Do you exclusively breastfeeding?
                             </div>
@@ -604,7 +606,9 @@ const GeneralInformation = ({
                       <FormControl>
                         <div className="flex border border-input p-3 rounded-md items-center justify-between">
                           <div>
-                            <div className="font-medium">12 Months Old Immunized Children</div>
+                            <div className="font-medium">
+                              12 Months Old Immunized Children
+                            </div>
                             <div className="text-sm text-gray-500">
                               Is your 12 months old baby immunized?
                             </div>

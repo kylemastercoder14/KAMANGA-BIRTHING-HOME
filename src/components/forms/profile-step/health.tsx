@@ -614,6 +614,7 @@ const HealthDetails = ({ form }: { form: UseFormReturn<ProfileFormData> }) => {
                     <Input
                       type="number"
                       {...field}
+                      value={field.value ?? undefined}
                       disabled={isSubmitting}
                       placeholder="Enter OSCA number if any"
                     />
