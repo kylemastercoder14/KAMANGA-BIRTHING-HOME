@@ -6,12 +6,14 @@ import { formatDistanceToNowStrict } from "date-fns";
 import Actions from "./actions";
 import HeaderFilter from "./header-filter";
 import { HealthProgramWithSections } from "@/types";
+import { Role } from "@prisma/client";
 
 interface ProgramsGridProps {
   data: HealthProgramWithSections[];
+  userRole?: Role;
 }
 
-const ProgramsGrid = ({ data }: ProgramsGridProps) => {
+const ProgramsGrid = ({ data, userRole }: ProgramsGridProps) => {
   const [filteredData, setFilteredData] = useState(data);
 
   // Moved here instead of being passed from the server
@@ -78,7 +80,7 @@ const ProgramsGrid = ({ data }: ProgramsGridProps) => {
                     </p>
                   </div>
 
-                  <Actions program={program} />
+                  <Actions program={program} userRole={userRole} />
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-1">

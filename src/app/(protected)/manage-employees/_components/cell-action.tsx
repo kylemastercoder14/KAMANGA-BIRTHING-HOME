@@ -16,10 +16,17 @@ import {
 import { useRouter } from "next/navigation";
 import AlertModal from "@/components/ui/alert-modal";
 import { toast } from "sonner";
-import { User } from "@prisma/client";
+import { User, Role } from "@prisma/client";
 import { deleteEmployee } from "@/actions";
 
-const CellActions = ({ data }: { data: User }) => {
+const CellActions = ({
+  data,
+  userRole
+}: {
+  data: User;
+  userRole?: Role;
+}) => {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const handleDelete = async () => {
@@ -53,17 +60,21 @@ const CellActions = ({ data }: { data: User }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => router.push(`/manage-employees/${data.id}`)}
-          >
-            <EditIcon className="size-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setIsOpen(true)}>
-            <ArchiveIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuItem
+                onClick={() => router.push(`/manage-employees/${data.id}`)}
+              >
+                <EditIcon className="size-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsOpen(true)}>
+                <ArchiveIcon className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

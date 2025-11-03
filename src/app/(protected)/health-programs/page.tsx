@@ -4,8 +4,10 @@ import { PlusCircle } from "lucide-react";
 import db from "@/lib/db";
 import Link from "next/link";
 import ProgramsGrid from './_components/programs-grid';
+import { useUser } from "@/hooks/use-user";
 
 const Page = async () => {
+  const { user } = await useUser();
   const data = await db.healthProgram.findMany({
     orderBy: {
       createdAt: "desc",
@@ -30,7 +32,7 @@ const Page = async () => {
       </div>
 
       {/* Filter + Grid (Client-Side Controlled) */}
-      <ProgramsGrid data={data} />
+      <ProgramsGrid data={data} userRole={user?.role} />
     </div>
   );
 };

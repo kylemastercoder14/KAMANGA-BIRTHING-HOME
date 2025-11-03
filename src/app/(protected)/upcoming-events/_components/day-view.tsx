@@ -29,7 +29,7 @@ interface DayViewProps {
   currentDate: Date;
   events: Events[];
   onEventSelect: (event: Events) => void;
-  onEventCreate: (startTime: Date) => void;
+  onEventCreate?: (startTime: Date) => void;
 }
 
 interface PositionedEvent {
@@ -328,12 +328,12 @@ export function DayView({
                         quarter === 3 &&
                           "top-[calc(var(--week-cells-height)/4*3)]"
                       )}
-                      onClick={() => {
+                      onClick={onEventCreate ? () => {
                         const startTime = new Date(currentDate);
                         startTime.setHours(hourValue);
                         startTime.setMinutes(quarter * 15);
                         onEventCreate(startTime);
-                      }}
+                      } : undefined}
                     />
                   );
                 })}

@@ -44,7 +44,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Events } from "@prisma/client";
+import { Events, Role } from "@prisma/client";
 import { saveEvent } from "@/actions";
 import { useRouter } from "next/navigation";
 
@@ -54,6 +54,8 @@ export interface EventCalendarProps {
   onEventDelete?: (eventId: string) => void;
   className?: string;
   initialView?: CalendarView;
+  userRole?: Role;
+  readOnly?: boolean; // When true, disables event creation and editing
 }
 
 export function EventCalendar({
@@ -62,7 +64,10 @@ export function EventCalendar({
   onEventDelete,
   className,
   initialView = "month",
+  userRole,
+  readOnly = false,
 }: EventCalendarProps) {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
@@ -143,6 +148,11 @@ export function EventCalendar({
   };
 
   const handleEventCreate = async (startTime: Date) => {
+    // Don't allow event creation in read-only mode
+    if (readOnly) {
+      return;
+    }
+
     console.log("Creating new event at:", startTime); // Debug log
 
     // Snap to 15-minute intervals
@@ -165,7 +175,7 @@ export function EventCalendar({
 
     // Instead of saving immediately — open modal with defaults
     setSelectedEvent({
-      id: "", // no id yet, since it’s not saved
+      id: "", // no id yet, since it's not saved
       title: "",
       description: "",
       start,
@@ -200,6 +210,11 @@ export function EventCalendar({
   };
 
   const handleEventUpdate = (updatedEvent: Events) => {
+    // Don't allow event updates in read-only mode
+    if (readOnly) {
+      return;
+    }
+
     onEventUpdate?.(updatedEvent);
 
     // Safely format date (handle null)
@@ -341,21 +356,23 @@ export function EventCalendar({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              className="max-[479px]:aspect-square max-[479px]:p-0!"
-              size="sm"
-              onClick={() => {
-                setSelectedEvent(null); // Ensure we're creating a new event
-                setIsEventDialogOpen(true);
-              }}
-            >
-              <PlusIcon
-                className="opacity-60 sm:-ms-1"
-                size={16}
-                aria-hidden="true"
-              />
-              <span className="max-sm:sr-only">New event</span>
-            </Button>
+            {!readOnly && (
+              <Button
+                className="max-[479px]:aspect-square max-[479px]:p-0!"
+                size="sm"
+                onClick={() => {
+                  setSelectedEvent(null); // Ensure we're creating a new event
+                  setIsEventDialogOpen(true);
+                }}
+              >
+                <PlusIcon
+                  className="opacity-60 sm:-ms-1"
+                  size={16}
+                  aria-hidden="true"
+                />
+                <span className="max-sm:sr-only">New event</span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -365,7 +382,7 @@ export function EventCalendar({
               currentDate={currentDate}
               events={events}
               onEventSelect={handleEventSelect}
-              onEventCreate={handleEventCreate}
+              onEventCreate={readOnly ? undefined : handleEventCreate}
             />
           )}
           {view === "week" && (
@@ -373,7 +390,7 @@ export function EventCalendar({
               currentDate={currentDate}
               events={events}
               onEventSelect={handleEventSelect}
-              onEventCreate={handleEventCreate}
+              onEventCreate={readOnly ? undefined : handleEventCreate}
             />
           )}
           {view === "day" && (
@@ -381,7 +398,7 @@ export function EventCalendar({
               currentDate={currentDate}
               events={events}
               onEventSelect={handleEventSelect}
-              onEventCreate={handleEventCreate}
+              onEventCreate={readOnly ? undefined : handleEventCreate}
             />
           )}
           {view === "agenda" && (
@@ -400,7 +417,8 @@ export function EventCalendar({
             setIsEventDialogOpen(false);
             setSelectedEvent(null);
           }}
-          onDelete={handleEventDelete}
+          onDelete={isAdmin ? handleEventDelete : undefined}
+          readOnly={readOnly}
         />
       </CalendarDndProvider>
     </div>

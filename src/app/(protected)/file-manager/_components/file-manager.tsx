@@ -123,10 +123,17 @@ function getFileIcon(iconType: string) {
   }
 }
 
+import { Role } from "@prisma/client";
+
 type SortOption = "name" | "date" | "size";
 type SortDirection = "asc" | "desc";
 
-export function FileManager() {
+interface FileManagerProps {
+  userRole?: Role;
+}
+
+export function FileManager({ userRole }: FileManagerProps) {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -280,6 +287,11 @@ export function FileManager() {
   };
 
   const handleDelete = async (itemId: string) => {
+    if (!isAdmin) {
+      toast.error("Unauthorized: Only administrators can delete files");
+      return;
+    }
+
     if (!confirm("Are you sure you want to delete this item?")) {
       return;
     }
@@ -301,6 +313,11 @@ export function FileManager() {
   };
 
   const handleBulkDelete = async () => {
+    if (!isAdmin) {
+      toast.error("Unauthorized: Only administrators can delete files");
+      return;
+    }
+
     if (selectedItems.size === 0) return;
     if (!confirm(`Delete ${selectedItems.size} selected item(s)?`)) return;
 
@@ -512,21 +529,23 @@ export function FileManager() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete Selected"
-                )}
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Selected"
+                  )}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -594,15 +613,17 @@ export function FileManager() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem>Move</DropdownMenuItem>
                           <DropdownMenuItem>Copy</DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(item.id);
-                            }}
-                          >
-                            Delete
-                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(item.id);
+                              }}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

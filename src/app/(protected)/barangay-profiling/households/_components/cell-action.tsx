@@ -13,60 +13,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
-import AlertModal from "@/components/ui/alert-modal";
 import { toast } from "sonner";
-import { deleteEmployee } from "@/actions";
 import { HouseholdWithProfile } from '@/types';
+import { Role } from "@prisma/client";
 
-const CellActions = ({ data }: { data: HouseholdWithProfile }) => {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = React.useState(false);
-  const handleDelete = async () => {
-    try {
-      const response = await deleteEmployee(data.id);
-      if (response.error) {
-        toast.error(response.error);
-        return;
-      }
-      toast.success("Employee deleted successfully");
-      router.refresh();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsOpen(false);
-    }
-  };
+const CellActions = ({
+  data,
+  userRole
+}: {
+  data: HouseholdWithProfile;
+  userRole?: Role;
+}) => {
+  const isAdmin = userRole === Role.ADMIN;
+
+  // Households are managed through profiles, so we don't have edit/delete here
+  // Only show actions menu for ADMIN users
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
-    <>
-      <AlertModal
-        onConfirm={handleDelete}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0 ml-2.5">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => router.push(`/manage-employees/${data.id}`)}
-          >
-            <EditIcon className="size-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setIsOpen(true)}>
-            <ArchiveIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0 ml-2.5">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => {
+            // Navigate to view household profiles or other admin actions
+            toast.info("Household management is done through individual profiles");
+          }}
+        >
+          View Details
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

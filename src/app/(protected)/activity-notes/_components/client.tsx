@@ -30,7 +30,18 @@ import NotesForm from "@/components/forms/notes";
 import AlertModal from "@/components/ui/alert-modal";
 import { toast } from 'sonner';
 
-const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
+import { Role } from "@prisma/client";
+
+const Client = ({
+  data,
+  userId,
+  userRole
+}: {
+  data: Notes[];
+  userId: string;
+  userRole?: Role;
+}) => {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>(
     {}
@@ -66,6 +77,10 @@ const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
 
   // 🎨 Color Change (already works)
   const handleColorChange = (noteId: string, color: string) => {
+    if (!isAdmin) {
+      toast.error("Unauthorized: Only administrators can update notes");
+      return;
+    }
     setSelectedColors((prev) => ({ ...prev, [noteId]: color }));
     startTransition(async () => {
       await updateNoteColor(noteId, color);
@@ -75,6 +90,10 @@ const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
 
   // 📌 Handle Pin Toggle
   const handleTogglePin = (noteId: string) => {
+    if (!isAdmin) {
+      toast.error("Unauthorized: Only administrators can update notes");
+      return;
+    }
     const newPinnedState = !pinnedNotes[noteId];
     setPinnedNotes((prev) => ({ ...prev, [noteId]: newPinnedState }));
 
@@ -122,6 +141,12 @@ const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
 
   const handleDelete = async () => {
     if (!noteToDelete) return;
+    if (!isAdmin) {
+      toast.error("Unauthorized: Only administrators can delete notes");
+      setIsDeleteOpen(false);
+      setNoteToDelete(null);
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -296,25 +321,29 @@ const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
 
                   <div className="border-t border-black/20 mt-3 pt-2 flex justify-between items-center">
                     <div className="flex gap-3 text-black/80">
-                      <IconEdit
-                        className="size-4 cursor-pointer hover:text-black"
-                        onClick={() => {
-                          setSelectedNote(note);
-                          setIsOpen(true);
-                        }}
-                      />
-                      {isPending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : isPinned ? (
-                        <IconPinFilled
-                          className="size-4 cursor-pointer text-blue-700 hover:text-black"
-                          onClick={() => handleTogglePin(note.id)}
-                        />
-                      ) : (
-                        <IconPin
+                      {isAdmin && (
+                        <IconEdit
                           className="size-4 cursor-pointer hover:text-black"
-                          onClick={() => handleTogglePin(note.id)}
+                          onClick={() => {
+                            setSelectedNote(note);
+                            setIsOpen(true);
+                          }}
                         />
+                      )}
+                      {isAdmin && (
+                        isPending ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : isPinned ? (
+                          <IconPinFilled
+                            className="size-4 cursor-pointer text-blue-700 hover:text-black"
+                            onClick={() => handleTogglePin(note.id)}
+                          />
+                        ) : (
+                          <IconPin
+                            className="size-4 cursor-pointer hover:text-black"
+                            onClick={() => handleTogglePin(note.id)}
+                          />
+                        )
                       )}
                       <IconDownload
                         className="size-4 cursor-pointer hover:text-black"
@@ -324,31 +353,35 @@ const Client = ({ data, userId }: { data: Notes[]; userId: string }) => {
                         className="size-4 cursor-pointer hover:text-black"
                         onClick={() => handleShare(note)}
                       />
-                      <Popover>
-                        <PopoverTrigger>
-                          {isPending ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : (
-                            <IconPalette className="size-4 cursor-pointer hover:text-black" />
-                          )}
-                        </PopoverTrigger>
-                        <PopoverContent side="top">
-                          <RadioColor
-                            options={colorOptions}
-                            value={selectedColors[note.id]}
-                            onChange={(color) =>
-                              handleColorChange(note.id, color)
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <IconTrash
-                        className="size-4 cursor-pointer text-destructive"
-                        onClick={() => {
-                          setNoteToDelete(note.id);
-                          setIsDeleteOpen(true);
-                        }}
-                      />
+                      {isAdmin && (
+                        <Popover>
+                          <PopoverTrigger>
+                            {isPending ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <IconPalette className="size-4 cursor-pointer hover:text-black" />
+                            )}
+                          </PopoverTrigger>
+                          <PopoverContent side="top">
+                            <RadioColor
+                              options={colorOptions}
+                              value={selectedColors[note.id]}
+                              onChange={(color) =>
+                                handleColorChange(note.id, color)
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      {isAdmin && (
+                        <IconTrash
+                          className="size-4 cursor-pointer text-destructive"
+                          onClick={() => {
+                            setNoteToDelete(note.id);
+                            setIsDeleteOpen(true);
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

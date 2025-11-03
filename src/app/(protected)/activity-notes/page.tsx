@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 
 const Page = async () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
   if (!userId) redirect("/sign-in");
   const data = await db.notes.findMany({
     orderBy: {
@@ -30,7 +30,7 @@ const Page = async () => {
           <CreateNotes userId={userId} />
         </div>
       ) : (
-        <Client data={data} userId={userId} />
+        <Client data={data} userId={userId} userRole={user?.role} />
       )}
     </div>
   );

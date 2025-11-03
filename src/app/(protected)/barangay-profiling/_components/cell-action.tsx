@@ -23,8 +23,16 @@ import AlertModal from "@/components/ui/alert-modal";
 import { toast } from "sonner";
 import { deleteProfile } from "@/actions";
 import { ProfilingProps } from "@/types";
+import { Role } from "@prisma/client";
 
-const CellActions = ({ data }: { data: ProfilingProps }) => {
+const CellActions = ({
+  data,
+  userRole
+}: {
+  data: ProfilingProps;
+  userRole?: Role;
+}) => {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const handleDelete = async () => {
@@ -64,19 +72,23 @@ const CellActions = ({ data }: { data: ProfilingProps }) => {
             <PrinterIcon className="size-4" />
             Print
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() =>
-              router.push(`/barangay-profiling/profile/${data.id}`)
-            }
-          >
-            <EditIcon className="size-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setIsOpen(true)}>
-            <ArchiveIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/barangay-profiling/profile/${data.id}`)
+                }
+              >
+                <EditIcon className="size-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsOpen(true)}>
+                <ArchiveIcon className="size-4" />
+                Delete
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

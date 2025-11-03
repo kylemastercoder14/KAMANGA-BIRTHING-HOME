@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { useState } from "react";
 import CellActions from "./cell-action";
 import Image from "next/image";
-import { User } from "@prisma/client";
+import { User, Role } from "@prisma/client";
 
-export const columns: ColumnDef<User>[] = [
+export const columns = (userRole?: Role): ColumnDef<User>[] => [
   {
     accessorKey: "filtered",
     header: ({ column }) => {
@@ -206,7 +206,7 @@ export const columns: ColumnDef<User>[] = [
     },
     cell: ({ row }) => {
       const actions = row.original;
-      return <CellActions data={actions} />;
+      return <CellActions data={actions} userRole={userRole} />;
     },
   },
 ];

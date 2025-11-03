@@ -23,9 +23,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import { User } from "@prisma/client";
 
 const data = {
-  navMain: [
+  navMainAdmin: [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -86,9 +87,54 @@ const data = {
       icon: IconFileTextFilled,
     },
   ],
+  navMainStaff: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: IconDashboardFilled,
+    },
+    {
+      title: "Barangay Profiling",
+      url: "#",
+      icon: IconClipboardDataFilled,
+      items: [
+        {
+          title: "Manage profiles",
+          url: "/barangay-profiling",
+        },
+        {
+          title: "Households",
+          url: "/barangay-profiling/households",
+        },
+      ],
+    },
+    {
+      title: "Upcoming Events",
+      url: "/upcoming-events",
+      icon: IconCalendarWeekFilled,
+    },
+    {
+      title: "Health Programs",
+      url: "/health-programs",
+      icon: IconDeviceHeartMonitorFilled,
+    },
+    {
+      title: "File Manager",
+      url: "/file-manager",
+      icon: IconLibraryPhoto,
+    },
+    {
+      title: "Activity Notes",
+      url: "/activity-notes",
+      icon: IconClipboardTextFilled,
+    },
+  ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { user: User }) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -112,7 +158,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        {user.role === "ADMIN" ? (
+          <NavMain items={data.navMainAdmin} />
+        ) : (
+          <NavMain items={data.navMainStaff} />
+        )}
       </SidebarContent>
     </Sidebar>
   );

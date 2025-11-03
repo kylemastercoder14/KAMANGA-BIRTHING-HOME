@@ -17,8 +17,16 @@ import AlertModal from "@/components/ui/alert-modal";
 import { deleteProgram } from "@/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Role } from "@prisma/client";
 
-const Actions = ({ program }: { program: HealthProgramWithSections }) => {
+const Actions = ({
+  program,
+  userRole
+}: {
+  program: HealthProgramWithSections;
+  userRole?: Role;
+}) => {
+  const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -64,20 +72,24 @@ const Actions = ({ program }: { program: HealthProgramWithSections }) => {
               View Details
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={`/health-programs/${program.id}`}>
-              <Edit className="size-4" />
-              Edit
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-red-500 focus:text-red-500"
-            onClick={() => setIsOpen(true)}
-          >
-            <Trash className="size-4 text-red-500 focus:text-red-500" />
-            Delete
-          </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href={`/health-programs/${program.id}`}>
+                  <Edit className="size-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-500"
+                onClick={() => setIsOpen(true)}
+              >
+                <Trash className="size-4 text-red-500 focus:text-red-500" />
+                Delete
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

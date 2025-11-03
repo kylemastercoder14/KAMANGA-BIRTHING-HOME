@@ -12,6 +12,8 @@ import { useUser } from "@/hooks/use-user";
 import { healthProgramSchema } from "@/validators/health-program";
 import { ProfileFormData, ProfileValidators } from "@/validators/profile";
 import { FileNodeWithChildren } from "@/types";
+import { requireAdmin, isAdmin } from "@/lib/auth";
+import { Role } from "@prisma/client";
 
 async function logSystemAction(
   action: string,
@@ -243,7 +245,13 @@ export const createProfile = async (data: ProfileFormData) => {
 };
 
 export const updateProfile = async (data: ProfileFormData, id: string) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can update profiles" };
+  }
+
   try {
     const validated = ProfileValidators.parse(data);
 
@@ -352,7 +360,13 @@ export const updateProfile = async (data: ProfileFormData, id: string) => {
 };
 
 export const deleteProfile = async (id: string) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can delete profiles" };
+  }
+
   try {
     // Check if profile exists
     const profile = await db.profile.findUnique({
@@ -432,6 +446,13 @@ export const updateNote = async (
   values: z.infer<typeof noteSchema>,
   userId: string
 ) => {
+  const { user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can update notes" };
+  }
+
   try {
     // Validate input with Zod
     const parsedValues = noteSchema.parse(values);
@@ -466,6 +487,13 @@ export const updateNote = async (
 };
 
 export const updateNoteColor = async (noteId: string, color: string) => {
+  const { user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { success: false, error: "Unauthorized: Only administrators can update notes" };
+  }
+
   try {
     await db.notes.update({
       where: { id: noteId },
@@ -481,6 +509,13 @@ export const updateNoteColor = async (noteId: string, color: string) => {
 };
 
 export const updateNotePin = async (noteId: string, isPinned: boolean) => {
+  const { user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { success: false, error: "Unauthorized: Only administrators can update notes" };
+  }
+
   try {
     await db.notes.update({
       where: { id: noteId },
@@ -507,6 +542,13 @@ export const updateNoteOrder = async (noteId: string, newOrder: number) => {
 };
 
 export const deleteNote = async (noteId: string) => {
+  const { user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    throw new Error("Unauthorized: Only administrators can delete notes");
+  }
+
   try {
     await db.notes.delete({
       where: { id: noteId },
@@ -559,7 +601,13 @@ export const updateEmployee = async (
   id: string,
   values: z.infer<typeof employeeSchema>
 ) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can update employees" };
+  }
+
   try {
     // Validate input with Zod
     const parsedValues = employeeSchema.parse(values);
@@ -612,7 +660,13 @@ export const updateEmployee = async (
 };
 
 export const deleteEmployee = async (id: string) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can delete employees" };
+  }
+
   try {
     // Check if the employee exists
     const existingEmployee = await db.user.findUnique({
@@ -715,7 +769,16 @@ export const getEvents = async () => {
 };
 
 export const deleteEvent = async (eventId: string) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return {
+      success: false,
+      error: "Unauthorized: Only administrators can delete events",
+    };
+  }
+
   try {
     if (!eventId) {
       return {
@@ -807,7 +870,13 @@ export const updateProgram = async (
   id: string,
   values: z.infer<typeof healthProgramSchema>
 ) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can update programs" };
+  }
+
   try {
     // ✅ Validate input with Zod
     const parsedValues = healthProgramSchema.parse(values);
@@ -865,7 +934,13 @@ export const updateProgram = async (
 };
 
 export const deleteProgram = async (programId: string) => {
-  const { userId } = await useUser();
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can delete programs" };
+  }
+
   try {
     // Delete related sections first
     await db.programSection.deleteMany({
@@ -957,6 +1032,13 @@ export async function updateFileNode(
 }
 
 export async function deleteFileNode(id: string) {
+  const { user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    throw new Error("Unauthorized: Only administrators can delete files");
+  }
+
   // Delete children first if folder
   const fileNode = await db.fileNode.findUnique({
     where: { id },

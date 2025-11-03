@@ -1,13 +1,15 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from "react";
 import Heading from "@/components/globals/heading";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { IconPlus } from "@tabler/icons-react";
-import { columns } from "./_components/columns";
-import { DataTable } from "@/components/ui/data-table";
+import { EmployeeTable } from "./_components/employee-table";
 import db from "@/lib/db";
+import { useUser } from "@/hooks/use-user";
 
 const Page = async () => {
+  const { user } = await useUser();
   const data = await db.user.findMany({
     orderBy: {
       createdAt: "desc",
@@ -32,11 +34,7 @@ const Page = async () => {
       </div>
 
       <div className="mt-5">
-        <DataTable
-          columns={columns}
-          data={data}
-          searchPlaceholder="Filter employee ID or name..."
-        />
+        <EmployeeTable data={data} userRole={user?.role} />
       </div>
     </div>
   );

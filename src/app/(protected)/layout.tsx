@@ -25,7 +25,7 @@ const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
           } as React.CSSProperties
         }
       >
-        <AppSidebar variant="sidebar" />
+        <AppSidebar user={user} variant="sidebar" />
         <SidebarInset>
           <SiteHeader user={user} />
           {/* bg-gradient-to-b min-h-screen from-transparent via-green-700/30 to-green-900/50 */}

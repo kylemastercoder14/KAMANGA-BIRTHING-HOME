@@ -2,6 +2,9 @@ import React from "react";
 import db from "@/lib/db";
 import Heading from "@/components/globals/heading";
 import EmployeeForm from '@/components/forms/employee';
+import { useUser } from "@/hooks/use-user";
+import { Role } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 const Page = async (props: {
   params: Promise<{
@@ -9,12 +12,20 @@ const Page = async (props: {
   }>;
 }) => {
   const params = await props.params;
+  const { user } = await useUser();
 
-  const initialData = await db.user.findUnique({
-    where: {
-      id: params.id,
-    },
-  });
+  // If editing (not creating), check if user is ADMIN
+  if (params.id !== "create" && user?.role !== Role.ADMIN) {
+    redirect("/manage-employees");
+  }
+
+  const initialData = params.id === "create"
+    ? null
+    : await db.user.findUnique({
+        where: {
+          id: params.id,
+        },
+      });
   return (
     <div>
       <Heading

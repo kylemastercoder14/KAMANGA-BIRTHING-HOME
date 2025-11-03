@@ -1,10 +1,11 @@
 import React from "react";
 import db from "@/lib/db";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./_components/columns";
 import Heading from "@/components/globals/heading";
+import { useUser } from "@/hooks/use-user";
+import { HouseholdTable } from "./_components/household-table";
 
 const Page = async () => {
+  const { user } = await useUser();
   const data = await db.houseHold.findMany({
     orderBy: {
       householdNumber: "asc",
@@ -22,11 +23,7 @@ const Page = async () => {
         />
       </div>
       <div className="mt-5">
-        <DataTable
-          columns={columns}
-          data={data}
-          searchPlaceholder="Filter household ID or number..."
-        />
+        <HouseholdTable data={data} userRole={user?.role} />
       </div>
     </div>
   );

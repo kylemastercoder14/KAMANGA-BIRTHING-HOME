@@ -1,14 +1,15 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from "react";
 import db from "@/lib/db";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./_components/columns";
 import Heading from "@/components/globals/heading";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
 import Link from "next/link";
+import { ProfilingTabs } from "./_components/profiling-tabs";
+import { useUser } from "@/hooks/use-user";
 
 const Page = async () => {
+  const { user } = await useUser();
   const data = await db.profile.findMany({
     orderBy: {
       createdAt: "desc",
@@ -37,50 +38,7 @@ const Page = async () => {
         </Button>
       </div>
       <div className="mt-5">
-        <Tabs defaultValue="all">
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="4ps">4PS</TabsTrigger>
-            <TabsTrigger value="ips">IPS</TabsTrigger>
-            <TabsTrigger value="pwd">PWD</TabsTrigger>
-            <TabsTrigger value="pregnant">Pregnant</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all">
-            <DataTable
-              columns={columns}
-              data={data}
-              searchPlaceholder="Filter profile ID or name..."
-            />
-          </TabsContent>
-          <TabsContent value="4ps">
-            <DataTable
-              columns={columns}
-              data={data.filter((f) => f.areYou4ps)}
-              searchPlaceholder="Filter profile ID or name..."
-            />
-          </TabsContent>
-          <TabsContent value="ips">
-            <DataTable
-              columns={columns}
-              data={data.filter((f) => f.areYouIps)}
-              searchPlaceholder="Filter profile ID or name..."
-            />
-          </TabsContent>
-          <TabsContent value="pwd">
-            <DataTable
-              columns={columns}
-              data={data.filter((f) => f.areYouPwd)}
-              searchPlaceholder="Filter profile ID or name..."
-            />
-          </TabsContent>
-          <TabsContent value="pregnant">
-            <DataTable
-              columns={columns}
-              data={data.filter((f) => f.areYouPregnant)}
-              searchPlaceholder="Filter profile ID or name..."
-            />
-          </TabsContent>
-        </Tabs>
+        <ProfilingTabs allData={data} userRole={user?.role} />
       </div>
     </div>
   );

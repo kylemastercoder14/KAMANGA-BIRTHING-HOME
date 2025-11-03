@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { useState } from "react";
 import CellActions from "./cell-action";
 import { HouseholdWithProfile } from "@/types";
+import { Role } from "@prisma/client";
 
-export const columns: ColumnDef<HouseholdWithProfile>[] = [
+export const columns = (userRole?: Role): ColumnDef<HouseholdWithProfile>[] => [
   {
     accessorKey: "filtered",
     header: ({ column }) => {
@@ -132,7 +133,7 @@ export const columns: ColumnDef<HouseholdWithProfile>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const actions = row.original;
-      return <CellActions data={actions} />;
+      return <CellActions data={actions} userRole={userRole} />;
     },
   },
 ];

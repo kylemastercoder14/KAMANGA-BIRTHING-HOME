@@ -111,7 +111,7 @@ const Page = () => {
               Loading...
             </div>
           ) : (
-            <EventCalendar events={events} />
+            <EventCalendar events={events} readOnly={true} />
           )}
         </div>
       </section>

@@ -46,6 +46,7 @@ export function DroppableCell({
       onClick={onClick}
       className={cn(
         "data-dragging:bg-accent flex h-full flex-col overflow-hidden px-0.5 py-1 sm:px-1",
+        onClick && "cursor-pointer",
         className
       )}
       title={formattedTime ? `${formattedTime}` : undefined}

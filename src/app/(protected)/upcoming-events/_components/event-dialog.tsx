@@ -48,7 +48,8 @@ interface EventDialogProps {
   event: Events | null;
   isOpen: boolean;
   onClose: () => void;
-  onDelete: (eventId: string) => void;
+  onDelete?: (eventId: string) => void;
+  readOnly?: boolean; // When true, makes the dialog read-only (view only)
 }
 
 export function EventDialog({
@@ -56,6 +57,7 @@ export function EventDialog({
   isOpen,
   onClose,
   onDelete,
+  readOnly = false,
 }: EventDialogProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -212,7 +214,7 @@ export function EventDialog({
   };
 
   const handleDelete = () => {
-    if (event?.id) {
+    if (event?.id && onDelete) {
       onDelete(event.id);
     }
   };
@@ -266,9 +268,11 @@ export function EventDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px] max-w-4xl!">
         <DialogHeader>
-          <DialogTitle>{event?.id ? "Edit Event" : "Create Event"}</DialogTitle>
+          <DialogTitle>{readOnly ? "Event Details" : event?.id ? "Edit Event" : "Create Event"}</DialogTitle>
           <DialogDescription className="sr-only">
-            {event?.id
+            {readOnly
+              ? "View event details"
+              : event?.id
               ? "Edit the details of this event"
               : "Add a new event to your calendar"}
           </DialogDescription>
@@ -286,6 +290,8 @@ export function EventDialog({
               placeholder="Enter event title (e.g. Medical Mission)"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              disabled={readOnly}
+              readOnly={readOnly}
             />
           </div>
 
@@ -297,17 +303,20 @@ export function EventDialog({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Provide any additional information here..."
+              disabled={readOnly}
+              readOnly={readOnly}
             />
           </div>
 
           <div className="flex gap-4">
             <div className="flex-1 *:not-first:mt-1.5">
               <Label htmlFor="start-date">Start Date</Label>
-              <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
+              <Popover open={readOnly ? false : startDateOpen} onOpenChange={readOnly ? undefined : setStartDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     id="start-date"
                     variant={"outline"}
+                    disabled={readOnly}
                     className={cn(
                       "group bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]",
                       !startDate && "text-muted-foreground"
@@ -352,8 +361,8 @@ export function EventDialog({
             {!allDay && (
               <div className="min-w-28 *:not-first:mt-1.5">
                 <Label htmlFor="start-time">Start Time</Label>
-                <Select value={startTime} onValueChange={setStartTime}>
-                  <SelectTrigger id="start-time">
+                <Select value={startTime} onValueChange={setStartTime} disabled={readOnly}>
+                  <SelectTrigger id="start-time" disabled={readOnly}>
                     <SelectValue placeholder="Select time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -371,11 +380,12 @@ export function EventDialog({
           <div className="flex gap-4">
             <div className="flex-1 *:not-first:mt-1.5">
               <Label htmlFor="end-date">End Date</Label>
-              <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+              <Popover open={readOnly ? false : endDateOpen} onOpenChange={readOnly ? undefined : setEndDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     id="end-date"
                     variant={"outline"}
+                    disabled={readOnly}
                     className={cn(
                       "group bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]",
                       !endDate && "text-muted-foreground"
@@ -417,8 +427,8 @@ export function EventDialog({
             {!allDay && (
               <div className="min-w-28 *:not-first:mt-1.5">
                 <Label htmlFor="end-time">End Time</Label>
-                <Select value={endTime} onValueChange={setEndTime}>
-                  <SelectTrigger id="end-time">
+                <Select value={endTime} onValueChange={setEndTime} disabled={readOnly}>
+                  <SelectTrigger id="end-time" disabled={readOnly}>
                     <SelectValue placeholder="Select time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -438,6 +448,7 @@ export function EventDialog({
               id="all-day"
               checked={allDay}
               onCheckedChange={(checked) => setAllDay(checked === true)}
+              disabled={readOnly}
             />
             <Label htmlFor="all-day">All day</Label>
           </div>
@@ -449,6 +460,8 @@ export function EventDialog({
               placeholder="Enter event location (e.g. Sitio Purok 1)"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              disabled={readOnly}
+              readOnly={readOnly}
             />
           </div>
           <fieldset className="space-y-4">
@@ -460,6 +473,7 @@ export function EventDialog({
               defaultValue={colorOptions[0]?.value}
               value={color}
               onValueChange={(value: EventColor) => setColor(value)}
+              disabled={readOnly}
             >
               {colorOptions.map((colorOption) => (
                 <RadioGroupItem
@@ -478,7 +492,7 @@ export function EventDialog({
           </fieldset>
         </div>
         <DialogFooter className="flex-row sm:justify-between">
-          {event?.id && (
+          {event?.id && onDelete && !readOnly && (
             <Button
               variant="outline"
               size="icon"
@@ -490,9 +504,11 @@ export function EventDialog({
           )}
           <div className="flex flex-1 justify-end gap-2">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {readOnly ? "Close" : "Cancel"}
             </Button>
-            <Button disabled={loading} onClick={handleSave}>{loading ? "Saving..." : "Save"}</Button>
+            {!readOnly && (
+              <Button disabled={loading} onClick={handleSave}>{loading ? "Saving..." : "Save"}</Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>

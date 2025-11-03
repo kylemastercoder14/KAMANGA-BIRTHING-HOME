@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { useState } from "react";
 import CellActions from "./cell-action";
 import { ProfilingProps } from "@/types";
+import { Role } from "@prisma/client";
 
-export const columns: ColumnDef<ProfilingProps>[] = [
+export const columns = (userRole?: Role): ColumnDef<ProfilingProps>[] => [
   {
     accessorKey: "filtered",
     header: ({ column }) => {
@@ -233,7 +234,7 @@ export const columns: ColumnDef<ProfilingProps>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const actions = row.original;
-      return <CellActions data={actions} />;
+      return <CellActions data={actions} userRole={userRole} />;
     },
   },
 ];
