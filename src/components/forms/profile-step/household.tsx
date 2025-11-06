@@ -123,24 +123,48 @@ const HouseholdInformation = ({
 
   const locations = [
     {
-      value: "Sitio 1",
-      label: "Sitio 1",
+      value: "Sitio Pepe",
+      label: "Sitio Pepe",
     },
     {
-      value: "Sitio 2",
-      label: "Sitio 2",
+      value: "Sitio Lamlangil",
+      label: "Sitio Lamlangil",
     },
     {
-      value: "Sitio 3",
-      label: "Sitio 3",
+      value: "Sitio Libas",
+      label: "Sitio Libas",
     },
     {
-      value: "Sitio 4",
-      label: "Sitio 4",
+      value: "Sitio Abtam",
+      label: "Sitio Abtam",
     },
     {
-      value: "Sitio 5",
-      label: "Sitio 5",
+      value: "Sitio Mangelen",
+      label: "Sitio Mangelen",
+    },
+    {
+      value: "Sitio Tampuan",
+      label: "Sitio Tampuan",
+    },
+    {
+      value: "Sitio Looc",
+      label: "Sitio Looc",
+    },
+    {
+      value: "Sitio Riverside",
+      label: "Sitio Riverside",
+    },
+    {
+      value: "Sitio Taliac",
+      label: "Sitio Taliac",
+    },
+    {
+      value: "Sitio Seneil",
+      label: "Sitio Seneil",
+    },
+    {
+      value: "Proper Kamanga",
+      label: "Proper Kamanga",
     },
   ];
   return (
@@ -216,14 +240,16 @@ const HouseholdInformation = ({
                       <ComboboxEmpty />
                       <ComboboxList>
                         <ComboboxGroup>
-                          {locations.map((location) => (
-                            <ComboboxItem
-                              key={location.value}
-                              value={location.value}
-                            >
-                              {location.label}
-                            </ComboboxItem>
-                          ))}
+                          {locations
+                            .sort((a, b) => a.label.localeCompare(b.label))
+                            .map((location) => (
+                              <ComboboxItem
+                                key={location.value}
+                                value={location.value}
+                              >
+                                {location.label}
+                              </ComboboxItem>
+                            ))}
                         </ComboboxGroup>
                       </ComboboxList>
                     </ComboboxContent>
