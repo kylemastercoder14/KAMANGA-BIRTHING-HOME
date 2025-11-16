@@ -28,7 +28,8 @@ interface PopulationPerSitioProps {
 const chartConfig = {
   population: {
     label: "Total Population",
-    color: "hsl(210, 100%, 65%)",
+    // Emerald green accent
+    color: "hsl(142, 70%, 45%)",
   },
 } satisfies ChartConfig;
 
@@ -47,8 +48,8 @@ export function PopulationPerSitio({ populationPerSitio }: PopulationPerSitioPro
           <AreaChart data={populationPerSitio}>
             <defs>
               <linearGradient id="fillPopulation" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(210, 100%, 65%)" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="hsl(210, 100%, 65%)" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="hsl(142, 70%, 45%)" stopOpacity={0.9} />
+                <stop offset="95%" stopColor="hsl(142, 70%, 45%)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
 
@@ -85,7 +86,7 @@ export function PopulationPerSitio({ populationPerSitio }: PopulationPerSitioPro
             <Area
               type="monotone"
               dataKey="population"
-              stroke="hsl(210, 100%, 65%)"
+              stroke="hsl(142, 70%, 40%)"
               fill="url(#fillPopulation)"
               strokeWidth={2}
             />

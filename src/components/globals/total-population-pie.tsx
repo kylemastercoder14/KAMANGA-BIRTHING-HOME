@@ -20,13 +20,16 @@ interface SitioPopulationPercentageProps {
   }[];
 }
 
-// 🎨 Generate distinct HSL colors for each sitio
+// 🎨 Generate distinct greenish HSL colors for each sitio
 function generateDistinctColors(count: number): string[] {
   const colors: string[] = [];
+  const baseHue = 140; // green
+  const hueRange = 40; // spread around green for subtle variation
   for (let i = 0; i < count; i++) {
-    const hue = Math.round((360 / count) * i);
-    const saturation = 70;
-    const lightness = 60;
+    const t = count > 1 ? i / (count - 1) : 0.5;
+    const hue = baseHue - hueRange / 2 + hueRange * t; // e.g. 120–160
+    const saturation = 65 + 10 * (1 - t); // slightly more saturated on first items
+    const lightness = 45 + 15 * t; // vary lightness so slices are distinguishable
     colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
   }
   return colors;

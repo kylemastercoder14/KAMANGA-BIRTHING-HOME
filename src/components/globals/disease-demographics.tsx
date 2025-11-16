@@ -8,9 +8,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "
 import { getDiseaseDemographics } from "@/actions";
 
 const chartConfig = {
-  hypertension: { label: "Hypertension", color: "hsl(210, 100%, 70%)" },
-  diabetes: { label: "Diabetes", color: "hsl(40, 100%, 60%)" },
-  tubercolosis: { label: "Tubercolosis", color: "hsl(0, 100%, 70%)" },
+  hypertension: { label: "Hypertension", color: "hsl(142, 70%, 45%)" },
+  diabetes: { label: "Diabetes", color: "hsl(151, 60%, 48%)" },
+  tubercolosis: { label: "Tubercolosis", color: "hsl(163, 55%, 40%)" },
 } satisfies ChartConfig;
 
 export function DiseaseDemographics() {
