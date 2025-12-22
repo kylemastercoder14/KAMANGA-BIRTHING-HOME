@@ -170,6 +170,14 @@ const HouseholdInformation = ({
       value: "Sitio Talucao",
       label: "Sitio Talucao",
     },
+    {
+      value: "Sitio Taliac New",
+      label: "Sitio Taliac New",
+    },
+    {
+      value: "Sitio Kamanga 2",
+      label: "Sitio Kamanga 2",
+    },
   ];
   return (
     <div>
