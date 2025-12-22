@@ -143,6 +143,10 @@ const HouseholdInformation = ({
       label: "Sitio Mangelen",
     },
     {
+      value: "Sitio Mangelen 2",
+      label: "Sitio Mangelen 2",
+    },
+    {
       value: "Sitio Tampuan",
       label: "Sitio Tampuan",
     },
@@ -151,12 +155,12 @@ const HouseholdInformation = ({
       label: "Sitio Looc",
     },
     {
-      value: "Sitio Riverside",
-      label: "Sitio Riverside",
+      value: "Sitio Riverside Upper",
+      label: "Sitio Riverside Upper",
     },
     {
-      value: "Sitio Taliac",
-      label: "Sitio Taliac",
+      value: "Sitio Riverside Lower",
+      label: "Sitio Riverside Lower",
     },
     {
       value: "Sitio Seneil",
@@ -169,6 +173,10 @@ const HouseholdInformation = ({
     {
       value: "Sitio Talucao",
       label: "Sitio Talucao",
+    },
+    {
+      value: "Sitio Taliac",
+      label: "Sitio Taliac",
     },
     {
       value: "Sitio Taliac New",
