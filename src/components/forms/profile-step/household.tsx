@@ -166,6 +166,10 @@ const HouseholdInformation = ({
       value: "Proper Kamanga",
       label: "Proper Kamanga",
     },
+    {
+      value: "Sitio Talucao",
+      label: "Sitio Talucao",
+    },
   ];
   return (
     <div>
