@@ -12,7 +12,6 @@ import { useUser } from "@/hooks/use-user";
 import { healthProgramSchema } from "@/validators/health-program";
 import { ProfileFormData, ProfileValidators } from "@/validators/profile";
 import { FileNodeWithChildren } from "@/types";
-import { requireAdmin, isAdmin } from "@/lib/auth";
 import { Role } from "@prisma/client";
 
 async function logSystemAction(
@@ -491,7 +490,10 @@ export const updateNoteColor = async (noteId: string, color: string) => {
 
   // Check if user is ADMIN
   if (!user || user.role !== Role.ADMIN) {
-    return { success: false, error: "Unauthorized: Only administrators can update notes" };
+    return {
+      success: false,
+      error: "Unauthorized: Only administrators can update notes",
+    };
   }
 
   try {
@@ -513,7 +515,10 @@ export const updateNotePin = async (noteId: string, isPinned: boolean) => {
 
   // Check if user is ADMIN
   if (!user || user.role !== Role.ADMIN) {
-    return { success: false, error: "Unauthorized: Only administrators can update notes" };
+    return {
+      success: false,
+      error: "Unauthorized: Only administrators can update notes",
+    };
   }
 
   try {
@@ -1162,4 +1167,40 @@ export const getAllPrograms = async () => {
   });
 
   return programs;
+};
+
+export const deleteHousehold = async (householdId: string) => {
+  const { userId, user } = await useUser();
+
+  // Check if user is ADMIN
+  if (!user || user.role !== Role.ADMIN) {
+    return { error: "Unauthorized: Only administrators can delete households" };
+  }
+
+  try {
+    // Check if the household exists
+    const existingHousehold = await db.houseHold.findUnique({
+      where: { id: householdId },
+    });
+
+    if (!existingHousehold) {
+      return { error: "Household not found." };
+    }
+
+    // Delete the household
+    await db.houseHold.delete({
+      where: { id: householdId },
+    });
+
+    await logSystemAction(
+      "delete_household",
+      `Household '${existingHousehold.householdNumber}' (ID: ${householdId}) deleted.`,
+      userId
+    );
+
+    return { success: "Household deleted successfully." };
+  } catch (error) {
+    console.error("Failed to delete household:", error);
+    return { error: "Could not delete household. Please try again." };
+  }
 };

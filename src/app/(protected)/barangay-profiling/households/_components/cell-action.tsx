@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { EditIcon, MoreHorizontal, ArchiveIcon } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,16 +10,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { HouseholdWithProfile } from '@/types';
+import { HouseholdWithProfile } from "@/types";
 import { Role } from "@prisma/client";
+import { deleteHousehold } from "@/actions";
 
 const CellActions = ({
   data,
-  userRole
+  userRole,
 }: {
   data: HouseholdWithProfile;
   userRole?: Role;
@@ -31,6 +31,17 @@ const CellActions = ({
   if (!isAdmin) {
     return null;
   }
+
+  const handleDelete = async () => {
+    // Implement delete functionality here
+    const response = await deleteHousehold(data.id);
+    if (response.success) {
+      toast.success("Household deleted successfully");
+      // Optionally, refresh the table or page here
+    } else {
+      toast.error(`Failed to delete household: ${response.error || "Unknown error"}`);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -45,11 +56,14 @@ const CellActions = ({
         <DropdownMenuItem
           onClick={() => {
             // Navigate to view household profiles or other admin actions
-            toast.info("Household management is done through individual profiles");
+            toast.info(
+              "Household management is done through individual profiles"
+            );
           }}
         >
           View Details
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
