@@ -2,8 +2,6 @@ import React from "react";
 import db from "@/lib/db";
 import Heading from "@/components/globals/heading";
 import ProfileForm from "@/components/forms/profile-form";
-import { useUser } from "@/hooks/use-user";
-import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 const Page = async (props: {
@@ -12,10 +10,9 @@ const Page = async (props: {
   }>;
 }) => {
   const params = await props.params;
-  const { user } = await useUser();
 
   // If editing (not creating), check if user is ADMIN
-  if (params.profileId !== "create" && user?.role !== Role.ADMIN) {
+  if (params.profileId !== "create") {
     redirect("/barangay-profiling");
   }
 
