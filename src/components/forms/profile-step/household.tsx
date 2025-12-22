@@ -123,68 +123,60 @@ const HouseholdInformation = ({
 
   const locations = [
     {
-      value: "Sitio Pepe",
-      label: "Sitio Pepe",
-    },
-    {
-      value: "Sitio Lamlangil",
-      label: "Sitio Lamlangil",
-    },
-    {
-      value: "Sitio Libas",
-      label: "Sitio Libas",
-    },
-    {
-      value: "Sitio Abtam",
-      label: "Sitio Abtam",
-    },
-    {
-      value: "Sitio Mangelen",
-      label: "Sitio Mangelen",
-    },
-    {
-      value: "Sitio Mangelen 2",
-      label: "Sitio Mangelen 2",
+      value: "Sitio Looc",
+      label: "Sitio Looc",
     },
     {
       value: "Sitio Tampuan",
       label: "Sitio Tampuan",
     },
     {
-      value: "Sitio Looc",
-      label: "Sitio Looc",
+      value: "Sitio Talucao",
+      label: "Sitio Talucao",
     },
     {
-      value: "Sitio Riverside Upper",
-      label: "Sitio Riverside Upper",
+      value: "Sitio Mangelen 1",
+      label: "Sitio Mangelen 1",
     },
     {
-      value: "Sitio Riverside Lower",
-      label: "Sitio Riverside Lower",
-    },
-    {
-      value: "Sitio Seneil",
-      label: "Sitio Seneil",
+      value: "Sitio Mangelen 2",
+      label: "Sitio Mangelen 2",
     },
     {
       value: "Proper Kamanga",
       label: "Proper Kamanga",
     },
     {
-      value: "Sitio Talucao",
-      label: "Sitio Talucao",
-    },
-    {
-      value: "Sitio Taliac",
-      label: "Sitio Taliac",
-    },
-    {
       value: "Sitio Taliac New",
       label: "Sitio Taliac New",
     },
     {
-      value: "Sitio Kamanga 2",
-      label: "Sitio Kamanga 2",
+      value: "Sitio Taliac Old",
+      label: "Sitio Taliac Old",
+    },
+    {
+      value: "Sitio Riverside",
+      label: "Sitio Riverside",
+    },
+    {
+      value: "Sitio Riverside Upper",
+      label: "Sitio Riverside Upper",
+    },
+    {
+      value: "Sitio Seniil",
+      label: "Sitio Seniil",
+    },
+    {
+      value: "Sitio Libas",
+      label: "Sitio Libas",
+    },
+    {
+      value: "Sitio Lamlangil",
+      label: "Sitio Lamlangil",
+    },
+    {
+      value: "Sitio Pepe",
+      label: "Sitio Pepe",
     },
   ];
   return (
