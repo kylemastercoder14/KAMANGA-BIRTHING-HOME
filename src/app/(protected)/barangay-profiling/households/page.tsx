@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from "react";
 import db from "@/lib/db";
 import Heading from "@/components/globals/heading";

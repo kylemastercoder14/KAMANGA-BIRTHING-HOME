@@ -99,6 +99,10 @@ const data = {
       icon: IconClipboardDataFilled,
       items: [
         {
+          title: "Create new profile",
+          url: "/barangay-profiling/profile/new",
+        },
+        {
           title: "Manage profiles",
           url: "/barangay-profiling",
         },
