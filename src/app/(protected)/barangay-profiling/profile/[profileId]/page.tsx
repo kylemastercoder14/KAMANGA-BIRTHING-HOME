@@ -2,7 +2,6 @@ import React from "react";
 import db from "@/lib/db";
 import Heading from "@/components/globals/heading";
 import ProfileForm from "@/components/forms/profile-form";
-import { redirect } from "next/navigation";
 
 const Page = async (props: {
   params: Promise<{
@@ -10,11 +9,6 @@ const Page = async (props: {
   }>;
 }) => {
   const params = await props.params;
-
-  // If editing (not creating), check if user is ADMIN
-  if (params.profileId !== "create") {
-    redirect("/barangay-profiling");
-  }
 
   const data = params.profileId === "create"
     ? null

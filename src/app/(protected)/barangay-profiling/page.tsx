@@ -29,7 +29,7 @@ const Page = async () => {
         />
         <Button size="sm">
           <Link
-            href="/barangay-profiling/create"
+            href="/barangay-profiling/profile/create"
             className="flex items-center gap-2"
           >
             <IconPlus className="size-4" />
