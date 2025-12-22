@@ -26,13 +26,6 @@ const CellActions = ({
   userRole?: Role;
 }) => {
   const router = useRouter();
-  const isAdmin = userRole === Role.ADMIN;
-
-  // Households are managed through profiles, so we don't have edit/delete here
-  // Only show actions menu for ADMIN users
-  if (!isAdmin) {
-    return null;
-  }
 
   const handleDelete = async () => {
     // Implement delete functionality here
