@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { HouseholdWithProfile } from "@/types";
 import { Role } from "@prisma/client";
 import { deleteHousehold } from "@/actions";
+import { useRouter } from 'next/navigation';
 
 const CellActions = ({
   data,
@@ -24,6 +25,7 @@ const CellActions = ({
   data: HouseholdWithProfile;
   userRole?: Role;
 }) => {
+  const router = useRouter();
   const isAdmin = userRole === Role.ADMIN;
 
   // Households are managed through profiles, so we don't have edit/delete here
@@ -37,7 +39,7 @@ const CellActions = ({
     const response = await deleteHousehold(data.id);
     if (response.success) {
       toast.success("Household deleted successfully");
-      // Optionally, refresh the table or page here
+      router.refresh();
     } else {
       toast.error(`Failed to delete household: ${response.error || "Unknown error"}`);
     }
