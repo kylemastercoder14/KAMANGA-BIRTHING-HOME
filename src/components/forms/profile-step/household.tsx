@@ -204,7 +204,21 @@ const HouseholdInformation = ({
                       }
                       className="w-full"
                     />
-                    <ComboboxContent>
+                    <ComboboxContent
+                      filter={(value, search) => {
+                        // Use exact substring matching instead of fuzzy matching
+                        // This ensures "010LAM" won't match "001LAM"
+                        const item = formattedHouseholds.find(
+                          (h) => h.value === value
+                        );
+                        if (!item) return 0;
+                        return item.value
+                          .toLowerCase()
+                          .includes(search.toLowerCase())
+                          ? 1
+                          : 0;
+                      }}
+                    >
                       <ComboboxInput />
                       <ComboboxEmpty>
                         <ComboboxCreateNew onCreateNew={handleCreateNew} />

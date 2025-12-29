@@ -96,13 +96,26 @@ const ReviewSubmit = ({
       <Section title="Health Information" icon={Heart}>
         <div className="space-y-0">
           <Field label="Pregnant" value={values.areYouPregnant ? "Yes" : "No"} />
-          <Field label="Sanitized Toilet" value={values.sanitizedToilet ? "Yes" : "No"} />
-          {values.constructedDateToilet && (
-            <Field
-              label="Toilet Constructed Date"
-              value={formatDate(values.constructedDateToilet)}
-            />
-          )}
+          <Field
+            label="Sanitized Toilet"
+            value={
+              values.sanitizedToilet === "none"
+                ? "None"
+                : values.sanitizedToilet === "solo"
+                  ? "Solo"
+                  : values.sanitizedToilet === "shared"
+                    ? "Shared"
+                    : "N/A"
+            }
+          />
+          {(values.sanitizedToilet === "solo" ||
+            values.sanitizedToilet === "shared") &&
+            values.constructedDateToilet && (
+              <Field
+                label="Toilet Constructed Date"
+                value={formatDate(values.constructedDateToilet)}
+              />
+            )}
         </div>
       </Section>
 
