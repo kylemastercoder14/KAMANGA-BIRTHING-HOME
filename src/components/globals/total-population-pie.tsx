@@ -71,7 +71,7 @@ export function SitioPopulationPercentage({
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="w-full aspect-auto h-[300px]"
+          className="w-full aspect-auto h-[350px]"
         >
           <PieChart>
             <Pie
@@ -79,8 +79,9 @@ export function SitioPopulationPercentage({
               dataKey="population"
               nameKey="sitio"
               labelLine={false}
-              label={({ percentage }) => `${percentage}%`}
-              outerRadius={120}
+              label={false}
+              outerRadius={110}
+              innerRadius={40}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -90,17 +91,21 @@ export function SitioPopulationPercentage({
         </ChartContainer>
       </CardContent>
 
-      <CardFooter>
-        <div className="flex items-center mx-auto justify-center flex-wrap gap-5">
-          {Object.entries(chartConfig).map(([key, { label, color }]) => (
-            <div key={key} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-md"
-                style={{ backgroundColor: color }}
-              ></div>
-              <span className="text-sm text-muted-foreground">{label}</span>
-            </div>
-          ))}
+      <CardFooter className="pt-4">
+        <div className="w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[200px] overflow-y-auto">
+            {chartData.map((entry, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded-md flex-shrink-0"
+                  style={{ backgroundColor: entry.fill }}
+                ></div>
+                <span className="text-sm text-muted-foreground truncate">
+                  {entry.sitio} ({entry.percentage}%)
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </CardFooter>
     </Card>

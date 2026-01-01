@@ -45,9 +45,18 @@ export function DiseaseDemographics() {
           </div>
         ) : (
           <ChartContainer className="w-full h-[505px]" config={chartConfig}>
-            <BarChart data={chartData}>
+            <BarChart data={chartData} margin={{ bottom: 60 }}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="sitio" tickLine={false} tickMargin={10} axisLine={false} />
+              <XAxis
+                dataKey="sitio"
+                tickLine={false}
+                tickMargin={12}
+                axisLine={false}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                tick={{ fontSize: 11 }}
+              />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
               <Bar dataKey="hypertension" fill="var(--color-hypertension)" radius={4} />
               <Bar dataKey="diabetes" fill="var(--color-diabetes)" radius={4} />

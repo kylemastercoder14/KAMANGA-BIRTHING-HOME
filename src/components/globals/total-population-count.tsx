@@ -44,8 +44,8 @@ export function PopulationPerSitio({ populationPerSitio }: PopulationPerSitioPro
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[320px] w-full">
-          <AreaChart data={populationPerSitio}>
+        <ChartContainer config={chartConfig} className="aspect-auto h-[450px] w-full">
+          <AreaChart data={populationPerSitio} margin={{ bottom: 100, left: 10, right: 10, top: 10 }}>
             <defs>
               <linearGradient id="fillPopulation" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(142, 70%, 45%)" stopOpacity={0.9} />
@@ -58,9 +58,20 @@ export function PopulationPerSitio({ populationPerSitio }: PopulationPerSitioPro
               dataKey="sitio"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              interval={0}
-              minTickGap={10}
+              tickMargin={20}
+              angle={-60}
+              textAnchor="end"
+              height={100}
+              interval="preserveStartEnd"
+              minTickGap={30}
+              tick={{ fontSize: 10 }}
+              tickFormatter={(value) => {
+                // Truncate long sitio names
+                if (value.length > 15) {
+                  return value.substring(0, 12) + "...";
+                }
+                return value;
+              }}
             />
             <YAxis
               tickLine={false}
