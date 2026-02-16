@@ -22,7 +22,7 @@ export default function LoginPage() {
           </div>
         </div>
         <img
-          src="/baby.jpg"
+          src="/barangay.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover brightness-[0.5]"
         />
