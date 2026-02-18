@@ -10,19 +10,17 @@ export default function LoginPage() {
           <div className="flex z-50 items-center gap-2 font-medium">
             <img src="/kamanga.jpg" alt="Image" width={50} height={50} />
             <span className="font-semibold text-white">
-              Barangay Kamanga{" "}
-              <span>Health Center</span> Profiling
-              System
+              Barangay Kamanga Health Station Management System
             </span>
           </div>
           <div className="relative z-20 mt-auto max-w-3xl text-white/70">
             <blockquote className="leading-normal text-balance">
-              &ldquo;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptate a, mollitia quo expedita deserunt at quasi animi. Consectetur, numquam possimus?&rdquo; - Sofia Davis
+              &ldquo;Committed to serving the health needs of every family in Barangay Kamanga. Our digital profiling system ensures accurate health records, timely maternal care, proper child nutrition monitoring, and accessible health programs for all residents.&rdquo; - Barangay Kamanga
             </blockquote>
           </div>
         </div>
         <img
-          src="/barangay.jpg"
+          src="/baby.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover brightness-[0.5]"
         />
