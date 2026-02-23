@@ -71,7 +71,7 @@ export function LoginForm({
         height={120}
       />
       <span className="font-semibold text-center text-xl text-white">
-        Barangay Kamanga <span>Health Center</span> Profiling System
+        Barangay Kamanga Health Station Management System
       </span>
       <Card>
         <CardContent>
