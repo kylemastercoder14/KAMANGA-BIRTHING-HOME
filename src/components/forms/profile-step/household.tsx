@@ -298,9 +298,15 @@ const HouseholdInformation = ({
                     placeholder="Enter monthly income"
                     type="number"
                     value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        field.onChange(null);
+                        return;
+                      }
+
+                      field.onChange(Number(value));
+                    }}
                     disabled={isSubmitting}
                   />
                 </FormControl>

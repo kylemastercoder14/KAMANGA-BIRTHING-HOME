@@ -42,6 +42,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { FileUploadDialog } from "./file-upload-dialog";
 import { getFilesByParent, getFileById, deleteFileNode } from "@/actions";
@@ -132,6 +142,18 @@ interface FileManagerProps {
   userRole?: Role;
 }
 
+type PendingDelete =
+  | {
+      type: "single";
+      itemId: string;
+      itemName: string;
+    }
+  | {
+      type: "bulk";
+      itemIds: string[];
+      count: number;
+    };
+
 export function FileManager({ userRole }: FileManagerProps) {
   const isAdmin = userRole === Role.ADMIN;
   const router = useRouter();
@@ -150,6 +172,8 @@ export function FileManager({ userRole }: FileManagerProps) {
     Array<{ id: string; name: string }>
   >([]);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   const currentFolderId = searchParams.get("folderId") || undefined;
   const isMobile = useIsMobile();
@@ -286,52 +310,75 @@ export function FileManager({ userRole }: FileManagerProps) {
     setSelectedItems(newSelectedItems);
   };
 
-  const handleDelete = async (itemId: string) => {
+  const openDeleteDialogForItem = (item: FileItem) => {
     if (!isAdmin) {
       toast.error("Unauthorized: Only administrators can delete files");
       return;
     }
 
-    if (!confirm("Are you sure you want to delete this item?")) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      await deleteFileNode(itemId);
-      toast.success("Item deleted successfully");
-      fetchFiles(); // Refresh the list
-      if (selectedItem?.id === itemId) {
-        setSelectedItem(null);
-      }
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      toast.error("Failed to delete item");
-    } finally {
-      setDeleting(false);
-    }
+    setPendingDelete({
+      type: "single",
+      itemId: item.id,
+      itemName: item.name,
+    });
+    setDeleteDialogOpen(true);
   };
 
-  const handleBulkDelete = async () => {
+  const openDeleteDialogForBulk = () => {
     if (!isAdmin) {
       toast.error("Unauthorized: Only administrators can delete files");
       return;
     }
 
     if (selectedItems.size === 0) return;
-    if (!confirm(`Delete ${selectedItems.size} selected item(s)?`)) return;
 
+    setPendingDelete({
+      type: "bulk",
+      itemIds: [...selectedItems],
+      count: selectedItems.size,
+    });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    const target = pendingDelete;
+    if (!target) return;
+
+    setDeleteDialogOpen(false);
     setDeleting(true);
+
     try {
-      await Promise.all([...selectedItems].map((id) => deleteFileNode(id)));
-      toast.success("Selected items deleted successfully");
-      setSelectedItems(new Set());
-      fetchFiles();
+      if (target.type === "single") {
+        await deleteFileNode(target.itemId);
+        toast.success("Item deleted successfully");
+        if (selectedItem?.id === target.itemId) {
+          setSelectedItem(null);
+        }
+        setSelectedItems((prev) => {
+          const next = new Set(prev);
+          next.delete(target.itemId);
+          return next;
+        });
+      } else {
+        await Promise.all(target.itemIds.map((id) => deleteFileNode(id)));
+        toast.success("Selected items deleted successfully");
+        setSelectedItems(new Set());
+        if (selectedItem && target.itemIds.includes(selectedItem.id)) {
+          setSelectedItem(null);
+        }
+      }
+
+      await fetchFiles();
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete selected items");
+      console.error("Error deleting item(s):", error);
+      toast.error(
+        target.type === "single"
+          ? "Failed to delete item"
+          : "Failed to delete selected items"
+      );
     } finally {
       setDeleting(false);
+      setPendingDelete(null);
     }
   };
 
@@ -533,7 +580,7 @@ export function FileManager({ userRole }: FileManagerProps) {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={handleBulkDelete}
+                  onClick={openDeleteDialogForBulk}
                   disabled={deleting}
                 >
                   {deleting ? (
@@ -615,11 +662,11 @@ export function FileManager({ userRole }: FileManagerProps) {
                           <DropdownMenuItem>Copy</DropdownMenuItem>
                           {isAdmin && (
                             <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(item.id);
-                              }}
+                                className="text-red-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDeleteDialogForItem(item);
+                                }}
                             >
                               Delete
                             </DropdownMenuItem>
@@ -648,6 +695,48 @@ export function FileManager({ userRole }: FileManagerProps) {
                         checked={selectedItems.has(item.id)}
                         onClick={(e) => toggleItemSelection(item.id, e)}
                       />
+                    </div>
+
+                    {/* Actions in top-right corner */}
+                    <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={deleting}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontalIcon className="h-4 w-4" />
+                            <span className="sr-only">Open actions</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleItemClick(item);
+                            }}
+                          >
+                            {item.type === "folder" ? "Open" : "View Details"}
+                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDeleteDialogForItem(item);
+                                }}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
                     <div className="mb-2">{getFileIcon(item.icon)}</div>
@@ -721,6 +810,41 @@ export function FileManager({ userRole }: FileManagerProps) {
           </SheetContent>
         </Sheet>
       )}
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open && !deleting) {
+            setPendingDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingDelete?.type === "bulk"
+                ? "Delete selected items?"
+                : "Delete item?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete?.type === "bulk"
+                ? `This will permanently delete ${pendingDelete.count} selected item(s). This action cannot be undone.`
+                : `This will permanently delete "${pendingDelete?.itemName ?? "this item"}". This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting || !pendingDelete}
+              className="bg-destructive hover:bg-destructive/90 text-white"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -11,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createFileNode } from "@/actions";
 import { getFileIconAndType } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -30,6 +28,7 @@ export function FileUploadDialog({
   const [files, setFiles] = React.useState<File[]>([]);
   const [dragActive, setDragActive] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -48,7 +47,11 @@ export function FileUploadDialog({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (e.target.files) handleFiles(e.target.files);
+    if (e.target.files) {
+      handleFiles(e.target.files);
+      // Allow selecting the same file again after removing it.
+      e.target.value = "";
+    }
   };
 
   const handleFiles = (fileList: FileList) => {
@@ -102,6 +105,10 @@ export function FileUploadDialog({
     }
   };
 
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button onClick={() => setOpen(true)}>
@@ -123,20 +130,38 @@ export function FileUploadDialog({
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          onClick={openFilePicker}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openFilePicker();
+            }
+          }}
+          role="button"
+          tabIndex={0}
         >
+          <input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            className="sr-only"
+            onChange={handleChange}
+            multiple
+          />
           <div className="text-center">
             <Upload className="mx-auto size-10 opacity-25" aria-hidden="true" />
             <div className="mt-4 flex text-sm leading-none">
-              <Label htmlFor="file-upload" className="relative cursor-pointer">
-                <span>Upload a file</span>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  className="sr-only h-auto p-0"
-                  onChange={handleChange}
-                  multiple
-                />
-              </Label>
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto p-0 text-sm leading-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openFilePicker();
+                }}
+              >
+                Upload a file
+              </Button>
               <p className="pl-1">or drag and drop</p>
             </div>
             <p className="text-muted-foreground text-xs leading-5">

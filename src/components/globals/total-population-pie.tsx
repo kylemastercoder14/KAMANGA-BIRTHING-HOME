@@ -18,6 +18,7 @@ interface SitioPopulationPercentageProps {
     sitio: string;
     population: number;
   }[];
+  year?: number;
 }
 
 // 🎨 Generate distinct greenish HSL colors for each sitio

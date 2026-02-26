@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/actions";
 
@@ -92,15 +93,7 @@ export function LoginForm({
               </Field>
 
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel>Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
+                <FieldLabel>Password</FieldLabel>
                 <Input
                   type="password"
                   placeholder="Enter your password"
@@ -108,6 +101,14 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                 />
+                <div className="mt-2 flex ml-auto justify-end text-sm">
+                  <Link
+                    href="/forgot-password"
+                    className="w-fit underline-offset-4 hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}

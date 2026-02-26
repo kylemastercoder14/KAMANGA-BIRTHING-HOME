@@ -22,6 +22,7 @@ interface PopulationPerSitioProps {
     sitio: string;
     population: number;
   }[];
+  year?: number;
 }
 
 // ✅ Chart config
@@ -33,11 +34,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function PopulationPerSitio({ populationPerSitio }: PopulationPerSitioProps) {
+export function PopulationPerSitio({
+  populationPerSitio,
+  year,
+}: PopulationPerSitioProps) {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Population (2025)</CardTitle>
+        <CardTitle>
+          Total Population {year ? `(${year})` : ""}
+        </CardTitle>
         <CardDescription>
           Displays the total population count for each sitio.
         </CardDescription>

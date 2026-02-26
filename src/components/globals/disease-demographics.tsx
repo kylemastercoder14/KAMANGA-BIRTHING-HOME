@@ -13,24 +13,25 @@ const chartConfig = {
   tubercolosis: { label: "Tubercolosis", color: "hsl(163, 55%, 40%)" },
 } satisfies ChartConfig;
 
-export function DiseaseDemographics() {
+export function DiseaseDemographics({ year }: { year?: number }) {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const data = await getDiseaseDemographics();
+      setLoading(true);
+      const data = await getDiseaseDemographics(year);
       setChartData(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [year]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Disease Demographics</CardTitle>
         <CardDescription>
-          Showing disease prevalence per sitio (2025)
+          Showing disease prevalence per sitio {year ? `(${year})` : ""}
         </CardDescription>
       </CardHeader>
       <CardContent>

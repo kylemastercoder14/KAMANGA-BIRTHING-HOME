@@ -81,6 +81,87 @@ export const signIn = async (username: string, password: string) => {
   }
 };
 
+export const validateForgotPasswordUsername = async (username: string) => {
+  const trimmedUsername = username.trim();
+
+  if (!trimmedUsername) {
+    return { error: "Username is required." };
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { username: trimmedUsername },
+      select: { id: true, username: true, name: true },
+    });
+
+    if (!user) {
+      return { error: "Username does not exist." };
+    }
+
+    return {
+      success: true,
+      data: {
+        username: user.username,
+        name: user.name,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to validate forgot-password username:", error);
+    return { error: "Something went wrong. Please try again." };
+  }
+};
+
+export const resetForgotPassword = async (
+  username: string,
+  newPassword: string,
+  confirmPassword: string
+) => {
+  const trimmedUsername = username.trim();
+
+  if (!trimmedUsername) {
+    return { error: "Username is required." };
+  }
+
+  if (!newPassword) {
+    return { error: "New password is required." };
+  }
+
+  if (!confirmPassword) {
+    return { error: "Please confirm your new password." };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "Passwords do not match." };
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { username: trimmedUsername },
+      select: { id: true, username: true },
+    });
+
+    if (!user) {
+      return { error: "Username does not exist." };
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: { password: newPassword },
+    });
+
+    await logSystemAction(
+      "reset_password",
+      `Password reset completed for user '${user.username}'.`,
+      user.id
+    );
+
+    return { success: true, message: "Password updated successfully." };
+  } catch (error) {
+    console.error("Failed to reset password:", error);
+    return { error: "Could not reset password. Please try again." };
+  }
+};
+
 export const signOut = async (userId?: string) => {
   (await cookies()).set("Kamanga-Authorization", "", { maxAge: 0, path: "/" });
 
@@ -1109,8 +1190,19 @@ export async function getAllFiles() {
   }
 }
 
-export async function getDiseaseDemographics() {
+export async function getDiseaseDemographics(year?: number) {
+  const dateFilter =
+    typeof year === "number" && Number.isFinite(year)
+      ? {
+          createdAt: {
+            gte: new Date(year, 0, 1),
+            lt: new Date(year + 1, 0, 1),
+          },
+        }
+      : undefined;
+
   const profiles = await db.profile.findMany({
+    where: dateFilter,
     include: { household: true },
   });
 
@@ -1181,10 +1273,23 @@ export const deleteHousehold = async (householdId: string) => {
     // Check if the household exists
     const existingHousehold = await db.houseHold.findUnique({
       where: { id: householdId },
+      include: {
+        _count: {
+          select: {
+            profiles: true,
+          },
+        },
+      },
     });
 
     if (!existingHousehold) {
       return { error: "Household not found." };
+    }
+
+    if (existingHousehold._count.profiles > 0) {
+      return {
+        info: `Cannot delete household #${existingHousehold.householdNumber}. It still has ${existingHousehold._count.profiles} profile(s).`,
+      };
     }
 
     // Delete the household

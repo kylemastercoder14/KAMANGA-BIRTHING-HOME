@@ -20,7 +20,6 @@ import { useRouter } from 'next/navigation';
 
 const CellActions = ({
   data,
-  userRole,
 }: {
   data: HouseholdWithProfile;
   userRole?: Role;
@@ -28,8 +27,19 @@ const CellActions = ({
   const router = useRouter();
 
   const handleDelete = async () => {
-    // Implement delete functionality here
+    if ((data.profiles?.length ?? 0) > 0) {
+      toast.info(
+        `Cannot delete household #${data.householdNumber}. It still has ${data.profiles.length} profile(s).`
+      );
+      return;
+    }
+
     const response = await deleteHousehold(data.id);
+    if (response.info) {
+      toast.info(response.info);
+      return;
+    }
+
     if (response.success) {
       toast.success("Household deleted successfully");
       router.refresh();
@@ -50,10 +60,7 @@ const CellActions = ({
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem
           onClick={() => {
-            // Navigate to view household profiles or other admin actions
-            toast.info(
-              "Household management is done through individual profiles"
-            );
+            router.push(`/barangay-profiling/households/${data.id}`);
           }}
         >
           View Details
